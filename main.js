@@ -3,6 +3,11 @@ let stars = [];
 let particles = [];
 let starField;
 
+const FALLBACK_DEEPSEEK_KEY =
+    (typeof window !== 'undefined' && window.DEEPSEEK_DEFAULT_KEY)
+        ? window.DEEPSEEK_DEFAULT_KEY
+        : (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.apiKey : '');
+
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     initStarField();
@@ -403,46 +408,132 @@ function showError(element, message) {
 
 // DeepSeek API 调用函数
 async function callDeepSeekAPI(prompt, type = 'fortune') {
+    let storedKey = null;
+
     try {
-        // 检查API密钥
-        if (!DEEPSEEK_CONFIG.apiKey) {
-            throw new Error('请先设置DeepSeek API密钥');
-        }
-
-        const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/v1/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${DEEPSEEK_CONFIG.apiKey}`
-            },
-            body: JSON.stringify({
-                model: DEEPSEEK_CONFIG.model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: DEEPSEEK_CONFIG.prompts[type] || DEEPSEEK_CONFIG.prompts.fortune
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: DEEPSEEK_CONFIG.temperature,
-                max_tokens: DEEPSEEK_CONFIG.maxTokens,
-                top_p: DEEPSEEK_CONFIG.topP
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch (error) {
-        console.error('DeepSeek API调用失败:', error);
-        throw error;
+        storedKey = localStorage.getItem('deepseek_api_key');
+    } catch (storageError) {
+        console.warn('无法读取localStorage中的DeepSeek密钥:', storageError);
     }
+
+    const keysToTry = [];
+
+    if (storedKey) {
+        keysToTry.push(storedKey);
+    }
+
+    if (DEEPSEEK_CONFIG.apiKey && !keysToTry.includes(DEEPSEEK_CONFIG.apiKey)) {
+        keysToTry.push(DEEPSEEK_CONFIG.apiKey);
+    }
+
+    if (FALLBACK_DEEPSEEK_KEY && !keysToTry.includes(FALLBACK_DEEPSEEK_KEY)) {
+        keysToTry.push(FALLBACK_DEEPSEEK_KEY);
+    }
+
+    if (!keysToTry.length) {
+        throw new Error('请先设置DeepSeek API密钥');
+    }
+
+    let lastError = null;
+    let fallbackAuthFailed = false;
+
+    for (const key of keysToTry) {
+        const usingFallback = key === FALLBACK_DEEPSEEK_KEY;
+
+        if (usingFallback) {
+            console.info('正在使用系统默认的DeepSeek API密钥进行调用。');
+        }
+
+        try {
+            const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`
+                },
+                body: JSON.stringify({
+                    model: DEEPSEEK_CONFIG.model,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: DEEPSEEK_CONFIG.prompts[type] || DEEPSEEK_CONFIG.prompts.fortune
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: DEEPSEEK_CONFIG.temperature,
+                    max_tokens: DEEPSEEK_CONFIG.maxTokens,
+                    top_p: DEEPSEEK_CONFIG.topP
+                })
+            });
+
+            const rawText = await response.text();
+            let data = null;
+
+            if (rawText) {
+                try {
+                    data = JSON.parse(rawText);
+                } catch (parseError) {
+                    console.warn('DeepSeek API返回的内容无法解析为JSON:', parseError);
+                }
+            }
+
+            if (!response.ok) {
+                const message = data?.error?.message || rawText || `${response.status} ${response.statusText}`;
+                const error = new Error(`API请求失败: ${message}`);
+                error.status = response.status;
+                lastError = error;
+
+                if (response.status === 401 || response.status === 403) {
+                    if (usingFallback) {
+                        fallbackAuthFailed = true;
+                    }
+                    continue;
+                }
+
+                continue;
+            }
+
+            const content = data?.choices?.[0]?.message?.content;
+
+            if (!content) {
+                lastError = new Error('API返回数据格式不正确');
+                continue;
+            }
+
+            if (DEEPSEEK_CONFIG.apiKey !== key) {
+                DEEPSEEK_CONFIG.apiKey = key;
+            }
+
+            if (storedKey && key !== storedKey && usingFallback) {
+                try {
+                    localStorage.removeItem('deepseek_api_key');
+                    console.warn('自定义DeepSeek密钥不可用，已恢复为系统默认密钥。');
+                } catch (removeError) {
+                    console.warn('无法移除无效的自定义DeepSeek密钥:', removeError);
+                }
+            }
+
+            return content;
+        } catch (error) {
+            lastError = error;
+            if (!(error.status === 401 || error.status === 403)) {
+                console.error('DeepSeek API调用失败:', error);
+            }
+        }
+    }
+
+    if (fallbackAuthFailed) {
+        throw new Error('系统默认的DeepSeek密钥不可用，请在设置页面配置您自己的有效API密钥。');
+    }
+
+    if (lastError) {
+        throw lastError;
+    }
+
+    throw new Error('DeepSeek API调用失败，请稍后再试。');
 }
 
 // AI增强的运势计算
@@ -533,17 +624,38 @@ async function analyzeAstrologyWithAI(birthDate, currentDate = new Date()) {
 
 // 设置API密钥
 function setDeepSeekAPIKey(apiKey) {
-    DEEPSEEK_CONFIG.apiKey = apiKey;
-    localStorage.setItem('deepseek_api_key', apiKey);
-    console.log('DeepSeek API密钥已设置');
+    try {
+        if (apiKey) {
+            localStorage.setItem('deepseek_api_key', apiKey);
+            DEEPSEEK_CONFIG.apiKey = apiKey;
+            console.log('DeepSeek API密钥已设置');
+        } else {
+            localStorage.removeItem('deepseek_api_key');
+            DEEPSEEK_CONFIG.apiKey = FALLBACK_DEEPSEEK_KEY;
+            console.log('已恢复系统默认的DeepSeek API密钥');
+        }
+    } catch (error) {
+        console.warn('DeepSeek API密钥存储失败:', error);
+        DEEPSEEK_CONFIG.apiKey = apiKey || FALLBACK_DEEPSEEK_KEY;
+    }
 }
 
 // 获取存储的API密钥
 function loadStoredAPIKey() {
-    const storedKey = localStorage.getItem('deepseek_api_key');
-    if (storedKey) {
-        DEEPSEEK_CONFIG.apiKey = storedKey;
-        console.log('已加载存储的DeepSeek API密钥');
+    try {
+        const storedKey = localStorage.getItem('deepseek_api_key');
+        if (storedKey) {
+            DEEPSEEK_CONFIG.apiKey = storedKey;
+            console.log('已加载存储的DeepSeek API密钥');
+        } else if (FALLBACK_DEEPSEEK_KEY) {
+            DEEPSEEK_CONFIG.apiKey = FALLBACK_DEEPSEEK_KEY;
+            console.log('未检测到自定义密钥，使用内置默认密钥');
+        }
+    } catch (error) {
+        console.warn('读取DeepSeek API密钥失败，使用默认密钥:', error);
+        if (FALLBACK_DEEPSEEK_KEY) {
+            DEEPSEEK_CONFIG.apiKey = FALLBACK_DEEPSEEK_KEY;
+        }
     }
 }
 

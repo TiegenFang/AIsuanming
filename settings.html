@@ -84,16 +84,15 @@
                 <form id="apiKeyForm" class="space-y-6">
                     <div>
                         <label for="apiKey" class="block text-yellow-400 font-medium mb-2">DeepSeek API密钥</label>
-                        <input 
-                            type="password" 
-                            id="apiKey" 
-                            name="apiKey" 
+                        <input
+                            type="password"
+                            id="apiKey"
+                            name="apiKey"
                             class="input-field w-full px-4 py-3 rounded-lg"
-                            placeholder="请输入您的DeepSeek API密钥"
-                            required
+                            placeholder="留空以使用系统默认密钥"
                         >
                         <p class="text-sm text-gray-400 mt-2">
-                            您可以在 <a href="https://platform.deepseek.com/" target="_blank" class="text-yellow-400 hover:underline">DeepSeek平台</a> 获取API密钥
+                            平台已预置官方示例密钥，如需使用自有密钥，可在此处进行覆盖配置。
                         </p>
                     </div>
 
@@ -178,6 +177,11 @@
     <script src="config.js"></script>
     <script src="main.js"></script>
     <script>
+        const DEFAULT_DEEPSEEK_KEY =
+            (typeof window !== 'undefined' && window.DEEPSEEK_DEFAULT_KEY)
+                ? window.DEEPSEEK_DEFAULT_KEY
+                : (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.apiKey : '');
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentSettings();
@@ -186,16 +190,25 @@
 
         // 加载当前设置
         function loadCurrentSettings() {
-            const apiKey = localStorage.getItem('deepseek_api_key');
-            const model = localStorage.getItem('deepseek_model') || 'deepseek-chat';
-            const temperature = localStorage.getItem('deepseek_temperature') || '0.7';
-            const maxTokens = localStorage.getItem('deepseek_max_tokens') || '2000';
+            const storedKey = localStorage.getItem('deepseek_api_key');
+            const model = localStorage.getItem('deepseek_model') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.model : 'deepseek-chat') || 'deepseek-chat';
+            const temperature = localStorage.getItem('deepseek_temperature') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.temperature : '0.7') || '0.7';
+            const maxTokens = localStorage.getItem('deepseek_max_tokens') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.maxTokens : '2000') || '2000';
 
-            // 更新表单
-            document.getElementById('apiKey').value = apiKey || '';
+            // 更新表单（默认不展示系统密钥，可手动覆盖）
+            document.getElementById('apiKey').value = storedKey || '';
             document.getElementById('model').value = model;
             document.getElementById('temperature').value = temperature;
+            document.getElementById('temperatureValue').textContent = temperature;
             document.getElementById('maxTokens').value = maxTokens;
+
+            // 同步全局配置以便其他页面实时生效
+            if (typeof DEEPSEEK_CONFIG !== 'undefined') {
+                DEEPSEEK_CONFIG.model = model;
+                DEEPSEEK_CONFIG.temperature = parseFloat(temperature);
+                DEEPSEEK_CONFIG.maxTokens = parseInt(maxTokens, 10);
+                DEEPSEEK_CONFIG.apiKey = storedKey || DEFAULT_DEEPSEEK_KEY;
+            }
 
             // 更新显示
             updateSettingsDisplay();
@@ -203,13 +216,22 @@
 
         // 更新设置显示
         function updateSettingsDisplay() {
-            const apiKey = localStorage.getItem('deepseek_api_key');
-            const model = localStorage.getItem('deepseek_model') || 'deepseek-chat';
-            const temperature = localStorage.getItem('deepseek_temperature') || '0.7';
-            const maxTokens = localStorage.getItem('deepseek_max_tokens') || '2000';
+            const storedKey = localStorage.getItem('deepseek_api_key');
+            const hasDefaultKey = !storedKey && DEFAULT_DEEPSEEK_KEY;
+            const model = localStorage.getItem('deepseek_model') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.model : 'deepseek-chat') || 'deepseek-chat';
+            const temperature = localStorage.getItem('deepseek_temperature') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.temperature : '0.7') || '0.7';
+            const maxTokens = localStorage.getItem('deepseek_max_tokens') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.maxTokens : '2000') || '2000';
 
-            document.getElementById('keyStatus').textContent = apiKey ? '已设置' : '未设置';
-            document.getElementById('keyStatus').className = apiKey ? 'text-green-400' : 'text-red-400';
+            if (storedKey) {
+                document.getElementById('keyStatus').textContent = '已设置自定义密钥';
+                document.getElementById('keyStatus').className = 'text-green-400';
+            } else if (hasDefaultKey) {
+                document.getElementById('keyStatus').textContent = '使用系统默认密钥';
+                document.getElementById('keyStatus').className = 'text-blue-400';
+            } else {
+                document.getElementById('keyStatus').textContent = '未设置';
+                document.getElementById('keyStatus').className = 'text-red-400';
+            }
             document.getElementById('modelStatus').textContent = model;
             document.getElementById('tempStatus').textContent = temperature;
             document.getElementById('tokensStatus').textContent = maxTokens;
@@ -240,31 +262,35 @@
         // 保存设置
         function saveSettings() {
             const formData = new FormData(document.getElementById('apiKeyForm'));
-            
-            const apiKey = formData.get('apiKey');
-            const model = formData.get('model');
-            const temperature = formData.get('temperature');
-            const maxTokens = formData.get('maxTokens');
+
+            const apiKey = (formData.get('apiKey') || '').trim();
+            const model = formData.get('model') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.model : 'deepseek-chat');
+            const temperature = formData.get('temperature') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.temperature : '0.7');
+            const maxTokens = formData.get('maxTokens') || (typeof DEEPSEEK_CONFIG !== 'undefined' ? DEEPSEEK_CONFIG.maxTokens : '2000');
 
             // 保存到localStorage
-            localStorage.setItem('deepseek_api_key', apiKey);
+            if (apiKey) {
+                localStorage.setItem('deepseek_api_key', apiKey);
+            } else {
+                localStorage.removeItem('deepseek_api_key');
+            }
             localStorage.setItem('deepseek_model', model);
             localStorage.setItem('deepseek_temperature', temperature);
             localStorage.setItem('deepseek_max_tokens', maxTokens);
 
             // 更新全局配置
             if (typeof DEEPSEEK_CONFIG !== 'undefined') {
-                DEEPSEEK_CONFIG.apiKey = apiKey;
+                DEEPSEEK_CONFIG.apiKey = apiKey || DEFAULT_DEEPSEEK_KEY;
                 DEEPSEEK_CONFIG.model = model;
                 DEEPSEEK_CONFIG.temperature = parseFloat(temperature);
-                DEEPSEEK_CONFIG.maxTokens = parseInt(maxTokens);
+                DEEPSEEK_CONFIG.maxTokens = parseInt(maxTokens, 10);
             }
 
             // 更新显示
             updateSettingsDisplay();
 
             // 显示成功消息
-            showMessage('设置已保存！', 'success');
+            showMessage(apiKey ? '已保存自定义密钥设置！' : '已恢复系统默认密钥！', 'success');
         }
 
         // 测试连接
@@ -282,8 +308,12 @@
                 testResult.className = 'mt-4 text-center text-green-400';
                 testResult.innerHTML = '✅ 连接成功！AI功能已启用';
             } catch (error) {
+                const message = error && error.message ? error.message : '未知错误';
+                const guidance = message.includes('系统默认的DeepSeek密钥不可用')
+                    ? '<br>请在上方输入框填写您自己的有效API密钥后再试。'
+                    : '';
                 testResult.className = 'mt-4 text-center text-red-400';
-                testResult.innerHTML = `❌ 连接失败: ${error.message}`;
+                testResult.innerHTML = `❌ 连接失败: ${message}${guidance}`;
             } finally {
                 testButton.disabled = false;
                 testButton.textContent = '🧪 测试连接';

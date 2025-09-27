@@ -285,9 +285,8 @@
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-8">
                         <a href="index.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">首页</a>
-                        <a href="fortune.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">运势计算</a>
+                        <a href="fortune-new.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">运势计算</a>
                         <a href="tarot.html" class="nav-link text-yellow-400 hover:text-white px-3 py-2 text-sm font-medium">塔罗占卜</a>
-                        <a href="astrology.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">星象分析</a>
                         <a href="settings.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🔑 设置</a>
                         <a href="test-api.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🧪 测试</a>
                     </div>
@@ -444,7 +443,14 @@
                             <!-- 总结内容将通过JavaScript生成 -->
                         </div>
                     </div>
-                    
+
+                    <div id="finalAdviceContainer" class="mystical-card rounded-2xl p-8 mt-6 hidden">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-4">💡 最终指引</h3>
+                        <div id="finalAdviceContent" class="text-gray-200 leading-relaxed space-y-4">
+                            <!-- 最终建议将通过JavaScript生成 -->
+                        </div>
+                    </div>
+
                     <!-- 操作按钮 -->
                     <div class="text-center mt-12 space-x-4">
                         <button onclick="shareReading()" class="glow-button px-6 py-3 rounded-full text-black font-bold">
@@ -466,9 +472,8 @@
             <p class="text-gray-400 mb-8">探索未知，洞察未来，体验神秘的占卜之旅</p>
             <div class="flex justify-center space-x-8 mb-8">
                 <a href="index.html" class="text-gray-400 hover:text-yellow-400 transition-colors">首页</a>
-                <a href="fortune.html" class="text-gray-400 hover:text-yellow-400 transition-colors">运势计算</a>
+                <a href="fortune-new.html" class="text-gray-400 hover:text-yellow-400 transition-colors">运势计算</a>
                 <a href="tarot.html" class="text-yellow-400 hover:text-white transition-colors">塔罗占卜</a>
-                <a href="astrology.html" class="text-gray-400 hover:text-yellow-400 transition-colors">星象分析</a>
             </div>
             <p class="text-gray-500 text-sm">© 2025 神秘AI. 仅供娱乐参考，请理性对待占卜结果</p>
         </div>
@@ -481,6 +486,36 @@
         let selectedSpread = '';
         let drawnCards = [];
         let cardsRevealed = 0;
+
+        const topicDescriptions = {
+            love: '爱情运势',
+            career: '事业发展',
+            wealth: '财运分析',
+            health: '健康状况'
+        };
+
+        const topicAdviceMap = {
+            love: [
+                '保持开放的心态，真诚沟通，勇于表达真实感受。',
+                '为关系预留高质量的相处时间，营造温暖氛围。',
+                '倾听自己的直觉，尊重彼此的节奏。'
+            ],
+            career: [
+                '明确短期目标，按照计划推进核心任务。',
+                '积极寻求合作或导师支持，拓展资源。',
+                '在关键节点勇敢表达观点，展示专业实力。'
+            ],
+            wealth: [
+                '审视现金流和支出结构，为资金制定缓冲带。',
+                '优先选择熟悉领域的稳健理财方式。',
+                '设定阶段储蓄目标，避免冲动消费。'
+            ],
+            health: [
+                '建立稳定的作息节奏，保证充足睡眠。',
+                '安排规律运动或身心疗愈活动舒缓压力。',
+                '关注饮食与情绪之间的关系，适时求助专业人士。'
+            ]
+        };
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -788,12 +823,13 @@
             
             // 生成AI解读
             await generateAIInterpretation();
-            
+
             generateReadingSummary();
-            
+            updateFinalAdvice();
+
             // 滚动到解读区域
-            document.getElementById('interpretationSection').scrollIntoView({ 
-                behavior: 'smooth' 
+            document.getElementById('interpretationSection').scrollIntoView({
+                behavior: 'smooth'
             });
         }
         
@@ -923,15 +959,8 @@
         // 生成占卜总结
         function generateReadingSummary() {
             const summaryDiv = document.getElementById('readingSummary');
-            const topicDescriptions = {
-                love: '爱情运势',
-                career: '事业发展',
-                wealth: '财运分析',
-                health: '健康状况'
-            };
-
             const question = document.getElementById('questionInput').value.trim();
-            const topic = topicDescriptions[selectedTopic];
+            const topic = topicDescriptions[selectedTopic] || '整体运势';
 
             let summary = `根据您对"${topic}"的询问："${question}"，塔罗牌给出了以下指引：`;
 
@@ -948,35 +977,12 @@
             }
 
             // 根据主题添加特定建议
-            const topicAdvice = {
-                love: [
-                    '保持开放的心态，真诚沟通，勇于表达真实感受。',
-                    '为关系预留高质量的相处时间，营造温暖氛围。',
-                    '倾听自己的直觉，尊重彼此的节奏。'
-                ],
-                career: [
-                    '明确短期目标，按照计划推进核心任务。',
-                    '积极寻求合作或导师支持，拓展资源。',
-                    '在关键节点勇敢表达观点，展示专业实力。'
-                ],
-                wealth: [
-                    '审视现金流和支出结构，为资金制定缓冲带。',
-                    '优先选择熟悉领域的稳健理财方式。',
-                    '设定阶段性储蓄目标，避免冲动消费。'
-                ],
-                health: [
-                    '建立稳定的作息节奏，保证充足睡眠。',
-                    '安排规律运动或身心疗愈活动舒缓压力。',
-                    '关注饮食与情绪之间的关系，适时求助专业人士。'
-                ]
-            };
-
             const cardHighlights = drawnCards.map((card, index) => {
                 const meaning = card.isReversed ? card.reverse : card.meaning;
                 return `• ${getCardPosition(index)}的${card.name}${card.isReversed ? '(逆位)' : ''}：${meaning}`;
             }).join('\n');
 
-            const actionSteps = (topicAdvice[selectedTopic] || []).map(step => `- ${step}`).join('\n');
+            const actionSteps = (topicAdviceMap[selectedTopic] || []).map(step => `- ${step}`).join('\n');
 
             summary += `\n\n🔑 关键牌面启示：\n${cardHighlights}`;
 
@@ -988,7 +994,68 @@
 
             summaryDiv.textContent = summary;
         }
-        
+
+        function updateFinalAdvice() {
+            const container = document.getElementById('finalAdviceContainer');
+            const content = document.getElementById('finalAdviceContent');
+
+            if (!drawnCards.length) {
+                container.classList.add('hidden');
+                content.innerHTML = '';
+                return;
+            }
+
+            const question = document.getElementById('questionInput').value.trim();
+            const topicLabel = topicDescriptions[selectedTopic] || '当前主题';
+            const uprightCards = drawnCards.filter(card => !card.isReversed).length;
+            const reversedCards = drawnCards.length - uprightCards;
+
+            let toneMessage = '整体能量保持在平衡状态，关键在于审视自己的节奏与选择。';
+            if (uprightCards > reversedCards) {
+                toneMessage = '整体能量呈现积极走势，适合把握契机、主动推进计划。';
+            } else if (reversedCards > uprightCards) {
+                toneMessage = '牌阵能量略显紧张，请稳住节奏、谨慎评估每一步的影响。';
+            }
+
+            const keyCard = drawnCards[0];
+            const finalCard = drawnCards[drawnCards.length - 1];
+            const keyMeaning = keyCard ? (keyCard.isReversed ? keyCard.reverse : keyCard.meaning) : '';
+            const finalMeaning = finalCard ? (finalCard.isReversed ? finalCard.reverse : finalCard.meaning) : '';
+
+            const cautions = [];
+            if (reversedCards > 0) {
+                cautions.push(`牌阵中出现${reversedCards}张逆位牌，提醒你留意潜在的阻力与情绪波动。`);
+            }
+            if (finalCard) {
+                cautions.push(`${getCardPosition(drawnCards.length - 1)}位置的${finalCard.name}${finalCard.isReversed ? '(逆位)' : ''}提示：${finalMeaning}`);
+            }
+
+            const actions = (topicAdviceMap[selectedTopic] || []).slice(0, 2);
+            const questionLine = question ? `结合你关于“${question}”的提问，` : '';
+            const coreInsight = keyCard
+                ? `「${keyCard.name}${keyCard.isReversed ? '·逆位' : ''}」落在${getCardPosition(0)}位置，象征${keyMeaning}。`
+                : '';
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="p-4 rounded-xl bg-black bg-opacity-40 border border-yellow-500/40">
+                        <h4 class="text-yellow-300 font-bold mb-2">核心洞察</h4>
+                        <p class="text-sm md:text-base text-gray-200 leading-relaxed">${toneMessage}${coreInsight ? ` ${coreInsight}` : ''} ${questionLine}请在${topicLabel}中保持觉察与主动。</p>
+                    </div>
+                    ${cautions.length ? `<div><h4 class="text-yellow-300 font-bold mb-2">需要留意</h4><ul class="list-disc pl-5 space-y-2 text-sm md:text-base text-gray-300">${cautions.map(item => `<li>${item}</li>`).join('')}</ul></div>` : ''}
+                    <div>
+                        <h4 class="text-yellow-300 font-bold mb-2">行动建议</h4>
+                        <ol class="list-decimal pl-5 space-y-2 text-sm md:text-base text-gray-200">
+                            ${(actions.length ? actions : ['保持对内在声音的倾听，循序渐进地调整计划。']).map(item => `<li>${item}</li>`).join('')}
+                        </ol>
+                    </div>
+                    <p class="text-sm text-gray-400">请在接下来的七天内记录灵感或重要事件，以便与未来的占卜呼应。</p>
+                </div>
+            `;
+
+            container.classList.remove('hidden');
+        }
+
         // 更新占卜指引
         function updateReadingInstruction() {
             const instructions = {
@@ -1052,7 +1119,9 @@
             // 清除解读内容
             document.getElementById('cardInterpretations').innerHTML = '';
             document.getElementById('interpretationSection').classList.add('hidden');
-            
+            document.getElementById('finalAdviceContainer').classList.add('hidden');
+            document.getElementById('finalAdviceContent').innerHTML = '';
+
             // 滚动到顶部
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }

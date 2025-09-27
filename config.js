@@ -1,11 +1,13 @@
 // DeepSeek API 配置文件
+const DEFAULT_DEEPSEEK_KEY = 'sk-a2735f25c9ed497fb62d8d66564b1313';
+
 const DEEPSEEK_CONFIG = {
     // API 基础配置
     baseURL: 'https://api.deepseek.com',
     model: 'deepseek-chat',
     
-    // API 密钥 (请替换为您的实际密钥)
-    apiKey: 'sk-a2735f25c9ed497fb62d8d66564b1313', // 您的DeepSeek API密钥
+    // API 密钥 (默认提供平台内置密钥，可在设置页覆盖)
+    apiKey: DEFAULT_DEEPSEEK_KEY, // 您的DeepSeek API密钥
     
     // 请求配置
     timeout: 30000, // 30秒超时
@@ -28,7 +30,8 @@ const DEEPSEEK_CONFIG = {
 
 // 导出配置
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DEEPSEEK_CONFIG;
+    module.exports = { DEEPSEEK_CONFIG, DEFAULT_DEEPSEEK_KEY };
 } else {
     window.DEEPSEEK_CONFIG = DEEPSEEK_CONFIG;
+    window.DEEPSEEK_DEFAULT_KEY = DEFAULT_DEEPSEEK_KEY;
 }
