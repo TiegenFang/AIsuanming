@@ -706,13 +706,15 @@
 
         async function prepareFollowUpPlan(initialAnalysisText) {
             try {
-                const focusDescription = userProfile.focusAreas.length
-                    ? userProfile.focusAreas.map(area => ({
-                        love: '感情',
-                        career: '事业',
-                        wealth: '财务',
-                        health: '健康'
-                    }[area] || area).join('、'))
+                const focusDescriptions = userProfile.focusAreas.map(area => ({
+                    love: '感情',
+                    career: '事业',
+                    wealth: '财务',
+                    health: '健康'
+                }[area] || area);
+
+                const focusDescription = focusDescriptions.length
+                    ? focusDescriptions.join('、')
                     : '整体生活状态';
 
                 const planPrompt = `
