@@ -214,7 +214,7 @@
                         <div id="zodiacDisplay" class="zodiac-display rounded-xl p-6">
                             <!-- 星座信息将在这里显示 -->
                         </div>
-                        
+
                         <!-- 行星位置 -->
                         <div class="mystical-card rounded-xl p-6">
                             <h3 class="text-xl font-bold text-yellow-400 mb-4 text-center">🌌 当前行星影响</h3>
@@ -223,7 +223,16 @@
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- 星象速览 -->
+                    <div id="astrologySummary" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-6 hidden">
+                        <!-- 动态生成的星象速览卡片 -->
+                    </div>
+
+                    <div id="astrologyNarrative" class="mystical-card rounded-xl p-6 hidden">
+                        <!-- 星象叙述将在这里显示 -->
+                    </div>
+
                     <!-- 初步AI分析 -->
                     <div class="border-t border-yellow-600 pt-6">
                         <h3 class="text-2xl font-bold text-yellow-400 mb-4 text-center">🤖 AI初步分析</h3>
@@ -301,9 +310,9 @@
         let conversationHistory = [];
         let currentQuestionIndex = 0;
         let analysisData = {};
-        
-        // AI预设问题列表
-        const followUpQuestions = [
+        let followUpQuestions = [];
+
+        const defaultFollowUps = [
             "请详细描述一下您最近的心情状态和情绪变化？",
             "您目前面临的最大挑战或困扰是什么？",
             "在您关心的领域中，有什么具体的目标或期望吗？",
@@ -351,7 +360,7 @@
         function displayZodiacInfo() {
             const zodiacDisplay = document.getElementById('zodiacDisplay');
             const sign = userProfile.zodiacSign;
-            
+
             zodiacDisplay.innerHTML = `
                 <div class="text-center">
                     <div class="text-6xl mb-4">${sign.symbol}</div>
@@ -369,39 +378,145 @@
                     </div>
                 </div>
             `;
-            
+
             // 显示行星影响
-            displayPlanetaryInfluence();
+            displayPlanetaryInfluence(analysisData.activePlanets || []);
         }
 
         // 显示行星影响
-        function displayPlanetaryInfluence() {
+        function displayPlanetaryInfluence(activePlanets = []) {
             const planetaryDiv = document.getElementById('planetaryInfluence');
-            const currentDate = new Date();
-            
+
             const planets = [
                 { name: '太阳', symbol: '☀️', influence: '核心能量与生命力', color: '#fbbf24' },
                 { name: '月亮', symbol: '🌙', influence: '情感与直觉', color: '#e5e7eb' },
                 { name: '水星', symbol: '☿️', influence: '沟通与思维', color: '#fb923c' },
                 { name: '金星', symbol: '♀️', influence: '爱情与美感', color: '#f472b6' },
-                { name: '火星', symbol: '♂️', influence: '行动与激情', color: '#dc2626' }
+                { name: '火星', symbol: '♂️', influence: '行动与激情', color: '#dc2626' },
+                { name: '木星', symbol: '♃', influence: '扩张与幸运', color: '#34d399' },
+                { name: '土星', symbol: '♄', influence: '责任与结构', color: '#60a5fa' },
+                { name: '天王星', symbol: '♅', influence: '革新与突变', color: '#22d3ee' },
+                { name: '海王星', symbol: '♆', influence: '梦想与灵感', color: '#a855f7' },
+                { name: '冥王星', symbol: '♇', influence: '转化与觉醒', color: '#f87171' }
             ];
-            
+
             planetaryDiv.innerHTML = planets.map(planet => `
-                <div class="flex items-center space-x-3 p-2 rounded bg-black bg-opacity-20">
+                <div class="flex items-center space-x-3 p-2 rounded bg-black bg-opacity-20 ${activePlanets.includes(planet.name) ? 'border border-yellow-500 shadow-lg shadow-yellow-500/30' : ''}">
                     <div class="text-2xl">${planet.symbol}</div>
                     <div class="flex-1">
-                        <div class="font-bold" style="color: ${planet.color}">${planet.name}</div>
+                        <div class="font-bold flex items-center space-x-2" style="color: ${planet.color}">
+                            <span>${planet.name}</span>
+                            ${activePlanets.includes(planet.name) ? '<span class="text-xs text-yellow-300 bg-yellow-900 bg-opacity-40 px-2 py-0.5 rounded-full">重点影响</span>' : ''}
+                        </div>
                         <div class="text-sm text-gray-300">${planet.influence}</div>
                     </div>
                 </div>
             `).join('');
         }
 
+        function showAstrologyOverview(astrologyData) {
+            const summaryContainer = document.getElementById('astrologySummary');
+            const narrativeContainer = document.getElementById('astrologyNarrative');
+
+            if (!astrologyData) {
+                summaryContainer.classList.add('hidden');
+                narrativeContainer.classList.add('hidden');
+                return;
+            }
+
+            const metrics = [
+                { key: 'love', label: '爱情', icon: '💕' },
+                { key: 'career', label: '事业', icon: '💼' },
+                { key: 'wealth', label: '财运', icon: '💰' },
+                { key: 'health', label: '健康', icon: '🏥' }
+            ];
+
+            const cardsHTML = metrics.map(metric => {
+                const value = astrologyData[metric.key];
+                const displayValue = typeof value === 'number' ? `${value}%` : '—';
+
+                return `
+                    <div class="mystical-card rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-2xl">${metric.icon}</span>
+                            <span class="text-yellow-300 text-sm">${metric.label}</span>
+                        </div>
+                        <div class="text-3xl font-bold text-white">${displayValue}</div>
+                        <div class="mt-2 text-xs text-gray-300">${metric.label}能量指数</div>
+                    </div>
+                `;
+            }).join('');
+
+            summaryContainer.innerHTML = cardsHTML;
+
+            summaryContainer.classList.remove('hidden');
+
+            const narrativeParts = [
+                astrologyData.description ? `✨ <span class="font-semibold text-yellow-300">星座提醒：</span>${astrologyData.description}` : '',
+                astrologyData.advice ? `🪐 <span class="font-semibold text-yellow-300">行动建议：</span>${astrologyData.advice}` : '',
+                astrologyData.aiAnalysis ? `🔭 <span class="font-semibold text-yellow-300">DeepSeek 星象洞察：</span>${astrologyData.aiAnalysis}` : ''
+            ].filter(Boolean);
+
+            if (narrativeParts.length) {
+                narrativeContainer.innerHTML = `
+                    <div class="space-y-3 text-purple-100 leading-relaxed">
+                        ${narrativeParts.map(part => `<p class="text-sm md:text-base">${part}</p>`).join('')}
+                    </div>
+                `;
+                narrativeContainer.classList.remove('hidden');
+            } else {
+                narrativeContainer.classList.add('hidden');
+            }
+        }
+
+        function identifyActivePlanets(text) {
+            if (!text) return [];
+
+            const planetMap = {
+                '太阳': '太阳', 'sun': '太阳',
+                '月亮': '月亮', 'moon': '月亮',
+                '水星': '水星', 'mercury': '水星',
+                '金星': '金星', 'venus': '金星',
+                '火星': '火星', 'mars': '火星',
+                '木星': '木星', 'jupiter': '木星',
+                '土星': '土星', 'saturn': '土星',
+                '天王星': '天王星', 'uranus': '天王星',
+                '海王星': '海王星', 'neptune': '海王星',
+                '冥王星': '冥王星', 'pluto': '冥王星'
+            };
+
+            const lowerText = text.toLowerCase();
+            const active = new Set();
+
+            Object.entries(planetMap).forEach(([keyword, planetName]) => {
+                if (lowerText.includes(keyword.toLowerCase())) {
+                    active.add(planetName);
+                }
+            });
+
+            return Array.from(active);
+        }
+
+        function safeJSONParse(text) {
+            if (!text) return null;
+
+            let cleaned = text.trim();
+            if (cleaned.startsWith('```')) {
+                cleaned = cleaned.replace(/```json|```/gi, '').trim();
+            }
+
+            try {
+                return JSON.parse(cleaned);
+            } catch (error) {
+                console.warn('JSON解析失败:', error, cleaned);
+                return null;
+            }
+        }
+
         // 执行初步分析
         async function performInitialAnalysis() {
             const analysisContent = document.getElementById('analysisContent');
-            
+
             try {
                 // 显示加载状态
                 analysisContent.innerHTML = `
@@ -412,9 +527,26 @@
                         <span class="ml-2">AI正在深度分析您的星象...</span>
                     </div>
                 `;
-                
+
+                // 计算星象洞察
+                const astrologyInsights = await window.mysticalAI.analyzeAstrologyWithAI(userProfile.birthDate);
+                analysisData.astrology = astrologyInsights;
+                analysisData.activePlanets = identifyActivePlanets(astrologyInsights.aiAnalysis);
+
+                showAstrologyOverview(astrologyInsights);
+                displayPlanetaryInfluence(analysisData.activePlanets);
+
+                const focusDescription = userProfile.focusAreas.length
+                    ? userProfile.focusAreas.map(area => ({
+                        love: '感情',
+                        career: '事业',
+                        wealth: '财务',
+                        health: '健康'
+                    }[area] || area).join('、'))
+                    : '爱情、事业、财运与健康';
+
                 const initialPrompt = `
-                请作为一位专业的AI占星师，为用户提供初步的运势分析。
+                请作为一位专业的AI占星师，结合DeepSeek星象推演结果，为用户提供初步的运势分析。
 
                 用户信息：
                 - 生日：${userProfile.birthDate}
@@ -422,29 +554,41 @@
                 - 出生时间：${userProfile.birthTime || '未提供'}
                 - 出生地：${userProfile.birthPlace || '未提供'}
                 - 主要关心的问题：${userProfile.mainConcern}
-                - 关注领域：${userProfile.focusAreas.join(', ') || '全面分析'}
+                - 希望重点关注：${focusDescription}
 
-                请提供：
-                1. 基于星座特质的性格分析
-                2. 当前星象对用户的影响
-                3. 针对用户关心问题的初步解读
-                4. 各个运势方面的大致评估（爱情、事业、财运、健康）
+                星象参考：
+                - 星座能量分布：爱情${astrologyInsights.love}%，事业${astrologyInsights.career}%，财运${astrologyInsights.wealth}%，健康${astrologyInsights.health}%
+                - 星座提醒：${astrologyInsights.description}
+                - 行动建议：${astrologyInsights.advice}
+                - DeepSeek星象洞察：${astrologyInsights.aiAnalysis}
 
-                语言要专业而神秘，像真正的占星师。长度控制在300-500字。
+                请输出：
+                1. 基于星座特质的个性与当前状态概览
+                2. 重点行星及其对近期运势的影响（请点名涉及的行星）
+                3. 针对用户关心问题的初步洞察
+                4. 各领域运势评估与建议（爱情、事业、财运、健康）
+
+                语言要专业而神秘，像真正的占星师。长度控制在400字左右。
                 `;
-                
+
                 const response = await window.mysticalAI.callDeepSeekAPI(initialPrompt, 'fortune');
-                
+
                 // 显示分析结果
-                analysisContent.innerHTML = response;
-                
+                analysisContent.innerHTML = `
+                    <p class="text-xs text-purple-200 uppercase tracking-widest">DeepSeek 初步推断</p>
+                    <div class="mt-3 leading-relaxed">${response}</div>
+                `;
+
                 // 启用继续按钮
-                document.querySelector('#step2 button').disabled = false;
-                document.querySelector('#step2 button').classList.remove('opacity-50');
-                
+                const continueButton = document.querySelector('#step2 button');
+                continueButton.disabled = false;
+                continueButton.classList.remove('opacity-50');
+
                 // 保存初步分析
                 analysisData.initialAnalysis = response;
-                
+
+                await prepareFollowUpPlan(response);
+
             } catch (error) {
                 console.error('初步分析失败:', error);
                 analysisContent.innerHTML = `
@@ -455,7 +599,64 @@
                         您的星座特质显示出强烈的个性，当前时期适合关注个人成长和目标实现。
                     </div>
                 `;
-                document.querySelector('#step2 button').disabled = false;
+                const continueButton = document.querySelector('#step2 button');
+                continueButton.disabled = false;
+                followUpQuestions = [...defaultFollowUps];
+                analysisData.followUpPlan = {
+                    conversationGoal: '了解用户的情绪波动与关键事件',
+                    insightsToWatch: []
+                };
+            }
+        }
+
+        async function prepareFollowUpPlan(initialAnalysisText) {
+            try {
+                const focusDescription = userProfile.focusAreas.length
+                    ? userProfile.focusAreas.map(area => ({
+                        love: '感情',
+                        career: '事业',
+                        wealth: '财务',
+                        health: '健康'
+                    }[area] || area).join('、'))
+                    : '整体生活状态';
+
+                const planPrompt = `
+                你是一位富有同理心的AI占星师。根据以下初步分析内容与星象洞察，为用户设计一轮深入提问，帮助进一步了解用户最近的情绪、经历和挑战。
+
+                初步分析：${initialAnalysisText}
+                星象重点：${analysisData.astrology?.aiAnalysis || '无' }
+                用户关注方向：${focusDescription}
+
+                请以JSON格式返回，不要添加额外说明。格式如下：
+                {
+                    "conversationGoal": "本轮追问希望了解的重点",
+                    "questions": ["问题1", "问题2", "问题3"],
+                    "insightsToWatch": ["需要特别留意的星象或情绪线索", ...]
+                }
+                所有问题需要与用户近期的状态、心情或事件相关，并便于用户作出详细回答。
+                `;
+
+                const planResponse = await window.mysticalAI.callDeepSeekAPI(planPrompt, 'fortune');
+                const parsedPlan = safeJSONParse(planResponse);
+
+                if (parsedPlan && Array.isArray(parsedPlan.questions) && parsedPlan.questions.length) {
+                    followUpQuestions = parsedPlan.questions;
+                    analysisData.followUpPlan = parsedPlan;
+                } else {
+                    followUpQuestions = [...defaultFollowUps];
+                    analysisData.followUpPlan = {
+                        conversationGoal: '了解用户的情绪波动与关键事件',
+                        insightsToWatch: []
+                    };
+                }
+
+            } catch (error) {
+                console.warn('生成追问计划失败，使用默认问题:', error);
+                followUpQuestions = [...defaultFollowUps];
+                analysisData.followUpPlan = {
+                    conversationGoal: '了解用户的情绪波动与关键事件',
+                    insightsToWatch: []
+                };
             }
         }
 
@@ -471,19 +672,26 @@
         // 开始AI对话
         async function startAIChat() {
             const chatMessages = document.getElementById('chatMessages');
-            
+
             // 添加AI开场消息
-            addChatMessage('ai', '基于初步分析，我想更深入了解您的情况。让我们开始深度对话吧！');
-            
+            const opening = analysisData.followUpPlan?.conversationGoal
+                ? `基于刚才的星象推断，我希望进一步了解${analysisData.followUpPlan.conversationGoal}。请随意分享，您的感受越具体越好。`
+                : '基于初步分析，我想更深入了解您的情况。让我们开始深度对话吧！';
+            addChatMessage('ai', opening);
+
             // 开始第一个问题
             await askNextQuestion();
         }
 
         // 提出下一个问题
         async function askNextQuestion() {
+            if (!followUpQuestions.length) {
+                followUpQuestions = [...defaultFollowUps];
+            }
+
             if (currentQuestionIndex < followUpQuestions.length) {
                 const question = followUpQuestions[currentQuestionIndex];
-                
+
                 setTimeout(() => {
                     addChatMessage('ai', question);
                     currentQuestionIndex++;
@@ -565,10 +773,13 @@
 
                 之前的分析：${analysisData.initialAnalysis}
 
+                星象洞察：${analysisData.astrology?.aiAnalysis || '暂无星象数据'}
+                重点关注：${analysisData.followUpPlan?.insightsToWatch?.join('；') || '留意用户提到的关键事件与情绪'}
+
                 请给出简短的回应（50-100字），表示理解并可能提供一些初步建议或洞察。
                 保持专业占星师的语调。
                 `;
-                
+
                 const response = await window.mysticalAI.callDeepSeekAPI(contextPrompt, 'fortune');
                 addChatMessage('ai', response);
                 
@@ -601,6 +812,11 @@
                 - 星座：${userProfile.zodiacSign.name}
                 - 主要关心：${userProfile.mainConcern}
                 - 关注领域：${userProfile.focusAreas.join(', ')}
+
+                星象概览：
+                - 星座能量指数：爱情${analysisData.astrology?.love || '未知'}%，事业${analysisData.astrology?.career || '未知'}%，财运${analysisData.astrology?.wealth || '未知'}%，健康${analysisData.astrology?.health || '未知'}%
+                - 星象叙述：${analysisData.astrology?.aiAnalysis || '无'}
+                - 重点行星：${(analysisData.activePlanets || []).join('、') || '未识别'}
 
                 完整对话历史：
                 ${conversationHistory.map(msg => `${msg.sender}: ${msg.message}`).join('\n')}
