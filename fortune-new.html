@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.3/dist/purify.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -57,19 +59,71 @@
         }
         
         .chat-container {
-            max-height: 500px;
+            max-height: 520px;
             overflow-y: auto;
             scroll-behavior: smooth;
+            background: radial-gradient(circle at top, rgba(79, 70, 229, 0.12), rgba(10, 14, 39, 0.85));
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            box-shadow: inset 0 0 30px rgba(139, 92, 246, 0.1);
         }
-        
+
+        .chat-message {
+            position: relative;
+            padding: 1rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(6px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .chat-message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+        }
+
         .ai-message {
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(79, 70, 229, 0.2));
-            border-left: 4px solid #8b5cf6;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(79, 70, 229, 0.25));
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.25);
         }
-        
+
         .user-message {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
-            border-left: 4px solid #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.2));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+        }
+
+        .message-metadata {
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .message-content {
+            line-height: 1.7;
+        }
+
+        .message-content h2,
+        .message-content h3,
+        .message-content h4 {
+            color: #fcd34d;
+            font-weight: 700;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-content p + p {
+            margin-top: 0.75rem;
+        }
+
+        .message-content ul,
+        .message-content ol {
+            margin-left: 1.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .message-content ul li::marker {
+            color: #fbbf24;
         }
         
         .zodiac-display {
@@ -262,20 +316,47 @@
                     </div>
                     
                     <!-- 对话区域 -->
-                    <div id="chatContainer" class="chat-container border border-yellow-600 rounded-lg p-4 mb-6">
-                        <div id="chatMessages" class="space-y-4">
-                            <!-- 对话消息将在这里显示 -->
-                        </div>
+        <div id="chatContainer" class="chat-container rounded-2xl p-6 mb-6 space-y-4">
+            <div id="chatMessages" class="space-y-4">
+                <!-- 对话消息将在这里显示 -->
+            </div>
+        </div>
+
+        <!-- 用户输入区域 -->
+        <div id="userInputArea" class="flex space-x-4">
+            <textarea id="userInput" class="flex-1 px-4 py-3 rounded-lg input-field resize-none" rows="3"
+                placeholder="请详细描述您的情况..."></textarea>
+            <button onclick="sendMessage()" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
+                发送
+            </button>
+        </div>
+
+        <div id="chatSummaryActions" class="hidden mt-6">
+            <div class="mystical-card rounded-2xl p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-2">📝 对话总结选项</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            是否需要我将本次对话和最初的问题进行简要归纳？您可以快速获取要点，再决定是否生成完整运势报告。
+                        </p>
                     </div>
-                    
-                    <!-- 用户输入区域 -->
-                    <div id="userInputArea" class="flex space-x-4">
-                        <textarea id="userInput" class="flex-1 px-4 py-3 rounded-lg input-field resize-none" rows="3" 
-                            placeholder="请详细描述您的情况..."></textarea>
-                        <button onclick="sendMessage()" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
-                            发送
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button id="generateSummaryBtn" onclick="requestChatSummary()"
+                            class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                            🪄 生成对话总结
+                        </button>
+                        <button onclick="generateFinalReport()"
+                            class="border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-6 py-3 rounded-full font-bold transition-all duration-300">
+                            📊 生成综合报告
                         </button>
                     </div>
+                </div>
+                <div id="chatSummaryResult" class="hidden mt-6 p-4 rounded-xl bg-black bg-opacity-40 border border-yellow-500/40">
+                    <h4 class="text-yellow-300 font-bold mb-3">✨ 运势要点总结</h4>
+                    <div id="chatSummaryContent" class="message-content text-gray-200 text-sm leading-relaxed"></div>
+                </div>
+            </div>
+        </div>
                 </div>
 
                 <!-- 步骤4：最终综合分析 -->
@@ -311,6 +392,14 @@
         let currentQuestionIndex = 0;
         let analysisData = {};
         let followUpQuestions = [];
+        let typingIndicator = null;
+        let summarySectionVisible = false;
+        let summaryGenerated = false;
+
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
 
         const defaultFollowUps = [
             "请详细描述一下您最近的心情状态和情绪变化？",
@@ -344,7 +433,13 @@
                 focusAreas,
                 zodiacSign: window.mysticalAI.getZodiacSign(birthDate)
             };
-            
+
+            summarySectionVisible = false;
+            summaryGenerated = false;
+            document.getElementById('chatSummaryActions').classList.add('hidden');
+            document.getElementById('chatSummaryResult').classList.add('hidden');
+            document.getElementById('chatSummaryContent').innerHTML = '';
+
             // 隐藏第一步，显示第二步
             document.getElementById('step1').classList.add('hidden');
             document.getElementById('step2').classList.remove('hidden');
@@ -664,7 +759,10 @@
         function continueToChat() {
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step3').classList.remove('hidden');
-            
+            document.getElementById('chatSummaryActions').classList.add('hidden');
+            summarySectionVisible = false;
+            summaryGenerated = false;
+
             // 开始AI对话
             startAIChat();
         }
@@ -697,10 +795,9 @@
                     currentQuestionIndex++;
                 }, 1000);
             } else {
-                // 所有问题都问完了，生成最终分析
                 setTimeout(() => {
-                    addChatMessage('ai', '感谢您详细的分享！现在让我为您生成完整的个性化运势报告...');
-                    setTimeout(generateFinalReport, 2000);
+                    addChatMessage('ai', '感谢您详细的分享！我们已收集到关键线索，接下来您可以先查看对话总结，再决定是否生成完整的综合运势报告。');
+                    showSummaryActions();
                 }, 1000);
             }
         }
@@ -709,29 +806,35 @@
         function addChatMessage(sender, message) {
             const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
-            
+            const formattedMessage = renderMarkdown(message);
+
             if (sender === 'ai') {
-                messageDiv.className = 'ai-message rounded-lg p-4';
+                messageDiv.className = 'chat-message ai-message';
                 messageDiv.innerHTML = `
-                    <div class="flex items-start space-x-3">
-                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">AI</div>
-                        <div class="flex-1 text-purple-100 leading-relaxed">${message}</div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/30">AI</div>
+                        <div class="flex-1">
+                            <div class="message-metadata text-purple-200 mb-1 tracking-[0.25em]">MYSTIC AI</div>
+                            <div class="message-content text-purple-100 leading-relaxed">${formattedMessage}</div>
+                        </div>
                     </div>
                 `;
             } else {
-                messageDiv.className = 'user-message rounded-lg p-4';
+                messageDiv.className = 'chat-message user-message';
                 messageDiv.innerHTML = `
-                    <div class="flex items-start space-x-3 justify-end">
-                        <div class="flex-1 text-yellow-100 leading-relaxed text-right">${message}</div>
-                        <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-sm">您</div>
+                    <div class="flex items-start space-x-4 justify-end">
+                        <div class="flex-1 text-right">
+                            <div class="message-metadata text-amber-200 mb-1 tracking-[0.3em]">用户</div>
+                            <div class="message-content text-yellow-100 leading-relaxed">${formattedMessage}</div>
+                        </div>
+                        <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-yellow-400/30">您</div>
                     </div>
                 `;
             }
-            
+
             chatMessages.appendChild(messageDiv);
             document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
-            
-            // 保存到对话历史
+
             conversationHistory.push({ sender, message });
         }
 
@@ -766,6 +869,7 @@
         // AI回应
         async function aiRespond(userMessage) {
             try {
+                showTypingIndicator();
                 const contextPrompt = `
                 作为AI占星师，基于用户的回答继续对话：
 
@@ -781,10 +885,117 @@
                 `;
 
                 const response = await window.mysticalAI.callDeepSeekAPI(contextPrompt, 'fortune');
+                hideTypingIndicator();
                 addChatMessage('ai', response);
-                
+
             } catch (error) {
+                hideTypingIndicator();
                 addChatMessage('ai', '我理解您的情况。让我们继续深入分析...');
+            }
+        }
+
+        function showTypingIndicator() {
+            if (typingIndicator) return;
+
+            const chatMessages = document.getElementById('chatMessages');
+            typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-message ai-message';
+            typingIndicator.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">AI</div>
+                    <div class="flex-1 flex space-x-2">
+                        <span class="typing-indicator"></span>
+                        <span class="typing-indicator"></span>
+                        <span class="typing-indicator"></span>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.appendChild(typingIndicator);
+            document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            if (!typingIndicator) return;
+            typingIndicator.remove();
+            typingIndicator = null;
+        }
+
+        function renderMarkdown(message) {
+            if (!message) {
+                return '';
+            }
+
+            try {
+                const html = marked.parse(message);
+                return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+            } catch (error) {
+                console.warn('Markdown 渲染失败:', error);
+                return DOMPurify.sanitize(message);
+            }
+        }
+
+        function showSummaryActions() {
+            if (summarySectionVisible) return;
+
+            summarySectionVisible = true;
+            summaryGenerated = false;
+
+            const actions = document.getElementById('chatSummaryActions');
+            actions.classList.remove('hidden');
+
+            const result = document.getElementById('chatSummaryResult');
+            result.classList.add('hidden');
+            document.getElementById('chatSummaryContent').innerHTML = '';
+
+            const button = document.getElementById('generateSummaryBtn');
+            button.disabled = false;
+            button.textContent = '🪄 生成对话总结';
+        }
+
+        async function requestChatSummary() {
+            if (summaryGenerated) return;
+
+            const button = document.getElementById('generateSummaryBtn');
+            button.disabled = true;
+            button.textContent = '✨ 正在生成...';
+
+            const summaryResult = document.getElementById('chatSummaryResult');
+            summaryResult.classList.remove('hidden');
+            document.getElementById('chatSummaryContent').innerHTML = '<div class="text-gray-300">AI正在整理关键信息...</div>';
+
+            try {
+                const summaryPrompt = `
+                作为AI占星师，请用温暖且专业的口吻，总结以下对话中的关键信息，并对用户最初的问题给出两点简洁的回应：
+
+                用户基础信息：
+                - 生日：${userProfile.birthDate}
+                - 星座：${userProfile.zodiacSign?.name || '未知'}
+                - 初始问题：${userProfile.mainConcern}
+                - 关注领域：${userProfile.focusAreas.join('、') || '未指定'}
+
+                对话交流：
+                ${conversationHistory.map(entry => `${entry.sender === 'ai' ? 'AI' : '用户'}: ${entry.message}`).join('\n')}
+
+                请输出Markdown格式：
+                - 以二级标题开头，例如“## 今日对话摘要”。
+                - 列出运势核心要点的无序列表。
+                - 使用有序列表简要回答用户的原始问题，每点不超过30字。
+                - 最后给出一句鼓励性的提醒。
+                字数控制在120-180字。
+                `;
+
+                const summary = await window.mysticalAI.callDeepSeekAPI(summaryPrompt, 'fortune');
+                const content = renderMarkdown(summary);
+                document.getElementById('chatSummaryContent').innerHTML = content;
+                summaryGenerated = true;
+            } catch (error) {
+                console.error('总结生成失败:', error);
+                document.getElementById('chatSummaryContent').innerHTML = '<div class="text-red-300">抱歉，总结生成失败，请稍后重试。</div>';
+                summaryGenerated = false;
+            } finally {
+                button.disabled = summaryGenerated;
+                button.textContent = summaryGenerated ? '✅ 已生成总结' : '🪄 生成对话总结';
             }
         }
 
@@ -900,13 +1111,21 @@
             conversationHistory = [];
             currentQuestionIndex = 0;
             analysisData = {};
-            
+            followUpQuestions = [];
+            typingIndicator = null;
+            summarySectionVisible = false;
+            summaryGenerated = false;
+
             // 重置界面
             document.getElementById('step1').classList.remove('hidden');
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step3').classList.add('hidden');
             document.getElementById('step4').classList.add('hidden');
-            
+            document.getElementById('chatMessages').innerHTML = '';
+            document.getElementById('chatSummaryActions').classList.add('hidden');
+            document.getElementById('chatSummaryResult').classList.add('hidden');
+            document.getElementById('chatSummaryContent').innerHTML = '';
+
             // 清空输入
             document.getElementById('birthDate').value = '';
             document.getElementById('birthTime').value = '';
