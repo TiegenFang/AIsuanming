@@ -929,16 +929,16 @@
                 wealth: '财运分析',
                 health: '健康状况'
             };
-            
+
             const question = document.getElementById('questionInput').value.trim();
             const topic = topicDescriptions[selectedTopic];
-            
+
             let summary = `根据您对"${topic}"的询问："${question}"，塔罗牌给出了以下指引：`;
-            
+
             // 分析卡牌组合
             const uprightCards = drawnCards.filter(card => !card.isReversed).length;
             const reversedCards = drawnCards.filter(card => card.isReversed).length;
-            
+
             if (uprightCards > reversedCards) {
                 summary += `\n\n整体运势偏向积极，大部分卡牌为正位，显示您的问题有良好的发展趋势。`;
             } else if (reversedCards > uprightCards) {
@@ -946,18 +946,46 @@
             } else {
                 summary += `\n\n整体运势平衡，正逆位卡牌数量相当，显示情况复杂需要综合考虑。`;
             }
-            
+
             // 根据主题添加特定建议
             const topicAdvice = {
-                love: '\n\n建议您保持开放的心态，真诚沟通，相信爱情的美好。',
-                career: '\n\n建议您专注于目标，持续努力，把握机会展现自己的能力。',
-                wealth: '\n\n建议您理性投资，控制支出，稳健理财才能获得长久收益。',
-                health: '\n\n建议您注意休息，保持运动，身心健康需要平衡发展。'
+                love: [
+                    '保持开放的心态，真诚沟通，勇于表达真实感受。',
+                    '为关系预留高质量的相处时间，营造温暖氛围。',
+                    '倾听自己的直觉，尊重彼此的节奏。'
+                ],
+                career: [
+                    '明确短期目标，按照计划推进核心任务。',
+                    '积极寻求合作或导师支持，拓展资源。',
+                    '在关键节点勇敢表达观点，展示专业实力。'
+                ],
+                wealth: [
+                    '审视现金流和支出结构，为资金制定缓冲带。',
+                    '优先选择熟悉领域的稳健理财方式。',
+                    '设定阶段性储蓄目标，避免冲动消费。'
+                ],
+                health: [
+                    '建立稳定的作息节奏，保证充足睡眠。',
+                    '安排规律运动或身心疗愈活动舒缓压力。',
+                    '关注饮食与情绪之间的关系，适时求助专业人士。'
+                ]
             };
-            
-            summary += topicAdvice[selectedTopic];
+
+            const cardHighlights = drawnCards.map((card, index) => {
+                const meaning = card.isReversed ? card.reverse : card.meaning;
+                return `• ${getCardPosition(index)}的${card.name}${card.isReversed ? '(逆位)' : ''}：${meaning}`;
+            }).join('\n');
+
+            const actionSteps = (topicAdvice[selectedTopic] || []).map(step => `- ${step}`).join('\n');
+
+            summary += `\n\n🔑 关键牌面启示：\n${cardHighlights}`;
+
+            if (actionSteps) {
+                summary += `\n\n📌 行动建议：\n${actionSteps}`;
+            }
+
             summary += '\n\n请记住，塔罗牌是指引而非绝对预言，您的选择和行动才是决定未来的关键。';
-            
+
             summaryDiv.textContent = summary;
         }
         
