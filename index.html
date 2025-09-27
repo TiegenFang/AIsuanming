@@ -212,20 +212,6 @@
                 </button>
             </div>
             
-            <!-- API状态提示 -->
-            <div id="apiStatus" class="mt-8 max-w-md mx-auto hidden">
-                <div class="bg-red-900 bg-opacity-30 border border-red-400 rounded-lg p-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="text-red-300 font-bold text-sm">⚠️ API未配置</h4>
-                            <p class="text-red-100 text-xs mt-1">请先配置DeepSeek API以启用AI功能</p>
-                        </div>
-                        <button onclick="window.location.href='settings.html'" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold transition-colors">
-                            去设置
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -371,44 +357,5 @@
 
     <script src="config.js"></script>
     <script src="main.js"></script>
-    <script>
-        // 页面加载完成后检查API状态
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(checkAPIStatus, 1000); // 延迟检查，确保其他脚本加载完成
-        });
-
-        // 检查API状态
-        function checkAPIStatus() {
-            // 检查API密钥是否配置
-            if (!DEEPSEEK_CONFIG || !DEEPSEEK_CONFIG.apiKey || DEEPSEEK_CONFIG.apiKey.trim() === '') {
-                showAPIStatusWarning();
-            } else {
-                // 可以进一步测试API连接
-                testAPIConnection();
-            }
-        }
-
-        // 显示API状态警告
-        function showAPIStatusWarning() {
-            const apiStatus = document.getElementById('apiStatus');
-            if (apiStatus) {
-                apiStatus.classList.remove('hidden');
-            }
-        }
-
-        // 测试API连接
-        async function testAPIConnection() {
-            try {
-                // 简单测试API是否可用
-                if (window.mysticalAI && window.mysticalAI.callDeepSeekAPI) {
-                    await window.mysticalAI.callDeepSeekAPI('test', 'fortune');
-                    console.log('✅ API连接正常');
-                }
-            } catch (error) {
-                console.warn('⚠️ API连接失败:', error);
-                showAPIStatusWarning();
-            }
-        }
-    </script>
 </body>
 </html>
