@@ -395,6 +395,7 @@
         let typingIndicator = null;
         let summarySectionVisible = false;
         let summaryGenerated = false;
+        let followUpCompleted = false;
 
         marked.setOptions({
             breaks: true,
@@ -764,6 +765,7 @@
             document.getElementById('chatSummaryActions').classList.add('hidden');
             summarySectionVisible = false;
             summaryGenerated = false;
+            followUpCompleted = false;
 
             // 开始AI对话
             startAIChat();
@@ -789,6 +791,10 @@
                 followUpQuestions = [...defaultFollowUps];
             }
 
+            if (followUpCompleted) {
+                return;
+            }
+
             if (currentQuestionIndex < followUpQuestions.length) {
                 const question = followUpQuestions[currentQuestionIndex];
 
@@ -796,7 +802,9 @@
                     addChatMessage('ai', question);
                     currentQuestionIndex++;
                 }, 1000);
-            } else {
+            } else if (!followUpCompleted) {
+                followUpCompleted = true;
+                currentQuestionIndex = followUpQuestions.length + 1;
                 setTimeout(() => {
                     addChatMessage('ai', '感谢您详细的分享！我们已收集到关键线索，接下来您可以先查看对话总结，再决定是否生成完整的综合运势报告。');
                     showSummaryActions();
@@ -864,7 +872,9 @@
                 document.getElementById('userInputArea').style.opacity = '1';
                 
                 // 继续提问
-                setTimeout(askNextQuestion, 1500);
+                if (!followUpCompleted) {
+                    setTimeout(askNextQuestion, 1500);
+                }
             }, 1000);
         }
 
@@ -1117,6 +1127,7 @@
             typingIndicator = null;
             summarySectionVisible = false;
             summaryGenerated = false;
+            followUpCompleted = false;
 
             // 重置界面
             document.getElementById('step1').classList.remove('hidden');
