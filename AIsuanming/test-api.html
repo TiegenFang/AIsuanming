@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试 - 神秘AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .mystical-card {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid #d4af37;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .mystical-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+        }
+        
+        .glow-button {
+            background: linear-gradient(45deg, #d4af37, #c0c0c0);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .input-field {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #d4af37;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #c0c0c0;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+        
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .result-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #d4af37;
+            border-radius: 8px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 bg-black bg-opacity-50 backdrop-blur-md border-b border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-yellow-400">🔮 神秘AI</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-white hover:text-yellow-400 transition-colors">返回首页</a>
+                    <a href="settings.html" class="text-white hover:text-yellow-400 transition-colors">设置</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="pt-20 min-h-screen px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold text-yellow-400 mb-4">🧪 API测试中心</h1>
+                <p class="text-xl text-gray-300">测试DeepSeek API连接和功能</p>
+            </div>
+
+            <!-- 基础连接测试 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">🔗 基础连接测试</h2>
+                
+                <div class="space-y-4">
+                    <button id="testBasicConnection" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
+                        🚀 测试基础连接
+                    </button>
+                    <div id="basicTestResult" class="result-box hidden"></div>
+                </div>
+            </div>
+
+            <!-- 运势计算测试 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">🎯 运势计算测试</h2>
+                
+                <div class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-yellow-400 font-medium mb-2">生日</label>
+                            <input type="date" id="testBirthDate" class="input-field w-full px-4 py-3 rounded-lg" value="1990-01-01">
+                        </div>
+                        <div>
+                            <label class="block text-yellow-400 font-medium mb-2">问题</label>
+                            <input type="text" id="testQuestion" class="input-field w-full px-4 py-3 rounded-lg" placeholder="请分析我的今日运势" value="请分析我的今日运势">
+                        </div>
+                    </div>
+                    
+                    <button id="testFortune" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
+                        🔮 测试运势计算
+                    </button>
+                    <div id="fortuneTestResult" class="result-box hidden"></div>
+                </div>
+            </div>
+
+            <!-- 塔罗牌测试 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">🃏 塔罗牌测试</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-yellow-400 font-medium mb-2">问题</label>
+                        <input type="text" id="tarotQuestion" class="input-field w-full px-4 py-3 rounded-lg" placeholder="请为我解读塔罗牌" value="请为我解读塔罗牌">
+                    </div>
+                    
+                    <button id="testTarot" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
+                        🎴 测试塔罗牌解读
+                    </button>
+                    <div id="tarotTestResult" class="result-box hidden"></div>
+                </div>
+            </div>
+
+            <!-- 星象分析测试 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">⭐ 星象分析测试</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-yellow-400 font-medium mb-2">生日</label>
+                        <input type="date" id="astrologyBirthDate" class="input-field w-full px-4 py-3 rounded-lg" value="1990-01-01">
+                    </div>
+                    
+                    <button id="testAstrology" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
+                        🌟 测试星象分析
+                    </button>
+                    <div id="astrologyTestResult" class="result-box hidden"></div>
+                </div>
+            </div>
+
+            <!-- 自定义测试 -->
+            <div class="mystical-card rounded-2xl p-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">🎨 自定义测试</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-yellow-400 font-medium mb-2">自定义提示词</label>
+                        <textarea id="customPrompt" class="input-field w-full px-4 py-3 rounded-lg h-24" placeholder="请输入您的自定义提示词...">你是一位神秘的占卜师，请用诗意的语言为我解读运势</textarea>
+                    </div>
+                    
+                    <button id="testCustom" class="glow-button px-6 py-3 rounded-lg text-black font-bold">
+                        ✨ 测试自定义提示
+                    </button>
+                    <div id="customTestResult" class="result-box hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            showCurrentConfig();
+        });
+
+        // 显示当前配置
+        function showCurrentConfig() {
+            console.log('当前DeepSeek配置:', DEEPSEEK_CONFIG);
+            console.log('API密钥已设置:', !!DEEPSEEK_CONFIG.apiKey);
+            console.log('API端点:', DEEPSEEK_CONFIG.baseURL);
+            console.log('模型:', DEEPSEEK_CONFIG.model);
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 基础连接测试
+            document.getElementById('testBasicConnection').addEventListener('click', testBasicConnection);
+            
+            // 运势计算测试
+            document.getElementById('testFortune').addEventListener('click', testFortuneCalculation);
+            
+            // 塔罗牌测试
+            document.getElementById('testTarot').addEventListener('click', testTarotReading);
+            
+            // 星象分析测试
+            document.getElementById('testAstrology').addEventListener('click', testAstrologyAnalysis);
+            
+            // 自定义测试
+            document.getElementById('testCustom').addEventListener('click', testCustomPrompt);
+        }
+
+        // 基础连接测试
+        async function testBasicConnection() {
+            const button = document.getElementById('testBasicConnection');
+            const resultDiv = document.getElementById('basicTestResult');
+            
+            button.disabled = true;
+            button.textContent = '🔄 测试中...';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = '正在测试基础连接...';
+            
+            try {
+                const response = await window.mysticalAI.callDeepSeekAPI('请简单回复"连接成功"', 'fortune');
+                
+                resultDiv.textContent = `✅ 连接成功！\n\nAPI响应:\n${response}`;
+                resultDiv.className = 'result-box text-green-400';
+            } catch (error) {
+                resultDiv.textContent = `❌ 连接失败\n\n错误信息:\n${error.message}`;
+                resultDiv.className = 'result-box text-red-400';
+            } finally {
+                button.disabled = false;
+                button.textContent = '🚀 测试基础连接';
+            }
+        }
+
+        // 运势计算测试
+        async function testFortuneCalculation() {
+            const button = document.getElementById('testFortune');
+            const resultDiv = document.getElementById('fortuneTestResult');
+            const birthDate = document.getElementById('testBirthDate').value;
+            const question = document.getElementById('testQuestion').value;
+            
+            button.disabled = true;
+            button.textContent = '🔄 计算中...';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = '正在计算运势...';
+            
+            try {
+                const result = await window.mysticalAI.calculateFortuneWithAI(birthDate, question);
+                
+                resultDiv.textContent = `✅ 运势计算成功！\n\n基础运势:\n爱情: ${result.love}%\n事业: ${result.career}%\n财运: ${result.wealth}%\n健康: ${result.health}%\n\nAI分析:\n${result.aiAnalysis}`;
+                resultDiv.className = 'result-box text-green-400';
+            } catch (error) {
+                resultDiv.textContent = `❌ 运势计算失败\n\n错误信息:\n${error.message}`;
+                resultDiv.className = 'result-box text-red-400';
+            } finally {
+                button.disabled = false;
+                button.textContent = '🔮 测试运势计算';
+            }
+        }
+
+        // 塔罗牌测试
+        async function testTarotReading() {
+            const button = document.getElementById('testTarot');
+            const resultDiv = document.getElementById('tarotTestResult');
+            const question = document.getElementById('tarotQuestion').value;
+            
+            button.disabled = true;
+            button.textContent = '🔄 抽牌中...';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = '正在抽取塔罗牌...';
+            
+            try {
+                const cards = window.mysticalAI.drawTarotCards(3);
+                const result = await window.mysticalAI.interpretTarotWithAI(cards, question);
+                
+                let cardInfo = '抽到的牌:\n';
+                result.cards.forEach((card, index) => {
+                    cardInfo += `${index + 1}. ${card.name} ${card.isReversed ? '(逆位)' : '(正位)'}\n`;
+                });
+                
+                resultDiv.textContent = `✅ 塔罗牌解读成功！\n\n${cardInfo}\n\nAI解读:\n${result.aiInterpretation}`;
+                resultDiv.className = 'result-box text-green-400';
+            } catch (error) {
+                resultDiv.textContent = `❌ 塔罗牌解读失败\n\n错误信息:\n${error.message}`;
+                resultDiv.className = 'result-box text-red-400';
+            } finally {
+                button.disabled = false;
+                button.textContent = '🎴 测试塔罗牌解读';
+            }
+        }
+
+        // 星象分析测试
+        async function testAstrologyAnalysis() {
+            const button = document.getElementById('testAstrology');
+            const resultDiv = document.getElementById('astrologyTestResult');
+            const birthDate = document.getElementById('astrologyBirthDate').value;
+            
+            button.disabled = true;
+            button.textContent = '🔄 分析中...';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = '正在分析星象...';
+            
+            try {
+                const result = await window.mysticalAI.analyzeAstrologyWithAI(birthDate);
+                
+                resultDiv.textContent = `✅ 星象分析成功！\n\n星座: ${result.zodiacSign.name} (${result.zodiacSign.symbol})\n基础运势:\n爱情: ${result.love}%\n事业: ${result.career}%\n财运: ${result.wealth}%\n健康: ${result.health}%\n\nAI洞察:\n${result.aiAnalysis}`;
+                resultDiv.className = 'result-box text-green-400';
+            } catch (error) {
+                resultDiv.textContent = `❌ 星象分析失败\n\n错误信息:\n${error.message}`;
+                resultDiv.className = 'result-box text-red-400';
+            } finally {
+                button.disabled = false;
+                button.textContent = '🌟 测试星象分析';
+            }
+        }
+
+        // 自定义测试
+        async function testCustomPrompt() {
+            const button = document.getElementById('testCustom');
+            const resultDiv = document.getElementById('customTestResult');
+            const prompt = document.getElementById('customPrompt').value;
+            
+            button.disabled = true;
+            button.textContent = '🔄 测试中...';
+            resultDiv.className = 'result-box';
+            resultDiv.textContent = '正在测试自定义提示...';
+            
+            try {
+                const response = await window.mysticalAI.callDeepSeekAPI(prompt, 'fortune');
+                
+                resultDiv.textContent = `✅ 自定义测试成功！\n\nAI响应:\n${response}`;
+                resultDiv.className = 'result-box text-green-400';
+            } catch (error) {
+                resultDiv.textContent = `❌ 自定义测试失败\n\n错误信息:\n${error.message}`;
+                resultDiv.className = 'result-box text-red-400';
+            } finally {
+                button.disabled = false;
+                button.textContent = '✨ 测试自定义提示';
+            }
+        }
+    </script>
+</body>
+</html>
+

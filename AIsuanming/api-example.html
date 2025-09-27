@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek API 使用示例 - 神秘AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #d4af37;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .mystical-card {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid #d4af37;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .mystical-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 bg-black bg-opacity-50 backdrop-blur-md border-b border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-yellow-400">🔮 神秘AI</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-white hover:text-yellow-400 transition-colors">返回首页</a>
+                    <a href="settings.html" class="text-white hover:text-yellow-400 transition-colors">设置</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="pt-20 min-h-screen px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold text-yellow-400 mb-4">🚀 DeepSeek API 使用示例</h1>
+                <p class="text-xl text-gray-300">学习如何在您的神秘AI项目中集成和使用DeepSeek API</p>
+            </div>
+
+            <!-- 基础使用 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">📚 基础使用</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">1. 设置API密钥</h3>
+                        <div class="code-block">
+// 方法1: 直接在代码中设置
+window.mysticalAI.setDeepSeekAPIKey('your-api-key-here');
+
+// 方法2: 通过设置页面
+// 访问 settings.html 页面进行配置
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">2. 基础API调用</h3>
+                        <div class="code-block">
+// 直接调用DeepSeek API
+async function callAPI() {
+    try {
+        const response = await window.mysticalAI.callDeepSeekAPI(
+            '请为我分析今日运势', 
+            'fortune'
+        );
+        console.log(response);
+    } catch (error) {
+        console.error('API调用失败:', error);
+    }
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI增强功能 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">✨ AI增强功能</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">运势计算 + AI分析</h3>
+                        <div class="code-block">
+async function getFortuneWithAI() {
+    const birthDate = '1990-01-01';
+    const question = '请分析我的今日运势';
+    
+    try {
+        const result = await window.mysticalAI.calculateFortuneWithAI(birthDate, question);
+        console.log('基础运势:', result);
+        console.log('AI分析:', result.aiAnalysis);
+        console.log('星座信息:', result.zodiacSign);
+    } catch (error) {
+        console.error('获取运势失败:', error);
+    }
+}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">塔罗牌 + AI解读</h3>
+                        <div class="code-block">
+async function getTarotWithAI() {
+    const cards = window.mysticalAI.drawTarotCards(3);
+    const question = '请解读这些塔罗牌的含义';
+    
+    try {
+        const result = await window.mysticalAI.interpretTarotWithAI(cards, question);
+        console.log('抽到的牌:', result.cards);
+        console.log('AI解读:', result.aiInterpretation);
+    } catch (error) {
+        console.error('塔罗解读失败:', error);
+    }
+}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">星象分析 + AI洞察</h3>
+                        <div class="code-block">
+async function getAstrologyWithAI() {
+    const birthDate = '1990-01-01';
+    
+    try {
+        const result = await window.mysticalAI.analyzeAstrologyWithAI(birthDate);
+        console.log('基础星象:', result);
+        console.log('AI洞察:', result.aiAnalysis);
+    } catch (error) {
+        console.error('星象分析失败:', error);
+    }
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实际应用示例 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">🎯 实际应用示例</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">完整的运势计算页面</h3>
+                        <div class="code-block">
+// HTML
+&lt;div id="fortune-result"&gt;&lt;/div&gt;
+&lt;button onclick="calculateFortune()"&gt;开始计算&lt;/button&gt;
+
+// JavaScript
+async function calculateFortune() {
+    const birthDate = document.getElementById('birthDate').value;
+    const question = document.getElementById('question').value;
+    
+    // 显示加载动画
+    window.mysticalAI.showLoading(document.getElementById('fortune-result'));
+    
+    try {
+        const result = await window.mysticalAI.calculateFortuneWithAI(birthDate, question);
+        
+        // 显示结果
+        document.getElementById('fortune-result').innerHTML = `
+            &lt;div class="fortune-display"&gt;
+                &lt;h3&gt;您的运势分析&lt;/h3&gt;
+                &lt;div class="stats"&gt;
+                    &lt;p&gt;爱情: ${result.love}%&lt;/p&gt;
+                    &lt;p&gt;事业: ${result.career}%&lt;/p&gt;
+                    &lt;p&gt;财运: ${result.wealth}%&lt;/p&gt;
+                    &lt;p&gt;健康: ${result.health}%&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class="ai-analysis"&gt;
+                    &lt;h4&gt;AI深度分析:&lt;/h4&gt;
+                    &lt;p&gt;${result.aiAnalysis}&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        `;
+    } catch (error) {
+        window.mysticalAI.showError(document.getElementById('fortune-result'), error.message);
+    }
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 错误处理 -->
+            <div class="mystical-card rounded-2xl p-8 mb-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">⚠️ 错误处理</h2>
+                
+                <div class="space-y-4">
+                    <div class="bg-red-900 bg-opacity-30 p-4 rounded-lg">
+                        <h3 class="text-red-400 font-bold mb-2">常见错误及解决方案</h3>
+                        <ul class="text-sm text-gray-300 space-y-1">
+                            <li>• <strong>API密钥未设置:</strong> 请先访问设置页面配置API密钥</li>
+                            <li>• <strong>网络连接失败:</strong> 检查网络连接和API端点</li>
+                            <li>• <strong>配额不足:</strong> 检查DeepSeek账户余额</li>
+                            <li>• <strong>请求超时:</strong> 增加timeout设置或检查网络状况</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block">
+// 完整的错误处理示例
+async function safeAPICall(prompt, type) {
+    try {
+        const result = await window.mysticalAI.callDeepSeekAPI(prompt, type);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('API调用失败:', error);
+        
+        // 根据错误类型提供不同的处理
+        if (error.message.includes('API密钥')) {
+            return { 
+                success: false, 
+                error: '请先设置API密钥', 
+                action: 'redirectToSettings' 
+            };
+        } else if (error.message.includes('网络')) {
+            return { 
+                success: false, 
+                error: '网络连接失败，请稍后重试', 
+                action: 'retry' 
+            };
+        } else {
+            return { 
+                success: false, 
+                error: '未知错误，请稍后重试', 
+                action: 'retry' 
+            };
+        }
+    }
+}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最佳实践 -->
+            <div class="mystical-card rounded-2xl p-8">
+                <h2 class="text-3xl font-bold text-yellow-400 mb-6">💡 最佳实践</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">性能优化</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li>• 使用适当的temperature值(0.7-0.9)</li>
+                            <li>• 设置合理的max_tokens限制</li>
+                            <li>• 实现请求缓存机制</li>
+                            <li>• 添加加载状态和进度提示</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-400 mb-3">用户体验</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li>• 提供清晰的错误提示</li>
+                            <li>• 实现优雅的降级处理</li>
+                            <li>• 添加重试机制</li>
+                            <li>• 保持界面响应性</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
+

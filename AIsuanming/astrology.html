@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星象分析 - 神秘AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0a0e27;
+            --primary-black: #000000;
+            --accent-gold: #d4af37;
+            --accent-silver: #c0c0c0;
+            --secondary-purple: #2d1b69;
+            --secondary-red: #8b0000;
+            --text-white: #ffffff;
+            --text-light: #e0e0e0;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-purple) 100%);
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+        
+        .mystical-card {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid var(--accent-gold);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .mystical-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        .glow-button {
+            background: linear-gradient(45deg, var(--accent-gold), var(--accent-silver));
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gold);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .zodiac-wheel {
+            width: 400px;
+            height: 400px;
+            border: 4px solid var(--accent-gold);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, rgba(10, 14, 39, 0.8) 100%);
+            animation: rotate 60s linear infinite;
+        }
+        
+        .zodiac-sign {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(212, 175, 55, 0.2);
+            border: 2px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        
+        .zodiac-sign:hover {
+            transform: scale(1.2);
+            background: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        }
+        
+        .zodiac-sign.selected {
+            background: var(--accent-gold);
+            color: var(--primary-dark);
+            transform: scale(1.3);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+        }
+        
+        .planet {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-silver);
+            box-shadow: 0 0 10px rgba(192, 192, 192, 0.8);
+        }
+        
+        .planet.sun {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #FFD700, #FFA500);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .planet.moon {
+            background: radial-gradient(circle, #F0F0F0, #C0C0C0);
+            animation: orbit 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .input-field {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid var(--accent-gold);
+            color: var(--text-white);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-silver);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .constellation-info {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(10, 14, 39, 0.9) 100%);
+            border: 2px solid var(--accent-gold);
+            backdrop-filter: blur(15px);
+        }
+        
+        .fortune-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .fortune-card {
+            background: rgba(10, 14, 39, 0.9);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .fortune-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .progress-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-gold) 0deg, var(--accent-gold) var(--percentage, 0deg), rgba(212, 175, 55, 0.2) var(--percentage, 0deg));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+        
+        .progress-circle::before {
+            content: '';
+            width: 60px;
+            height: 60px;
+            background: var(--primary-dark);
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .progress-text {
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+        
+        .celestial-chart {
+            width: 100%;
+            height: 400px;
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div id="star-field" class="star-field"></div>
+    
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 bg-black bg-opacity-50 backdrop-blur-md border-b border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-yellow-400">🔮 神秘AI</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="index.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">首页</a>
+                        <a href="fortune.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">运势计算</a>
+                        <a href="tarot.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">塔罗占卜</a>
+                        <a href="astrology.html" class="nav-link text-yellow-400 hover:text-white px-3 py-2 text-sm font-medium">星象分析</a>
+                        <a href="settings.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🔑 设置</a>
+                        <a href="test-api.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🧪 测试</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="pt-20 min-h-screen">
+        <!-- 标题区域 -->
+        <section class="text-center py-12">
+            <div class="max-w-4xl mx-auto px-4">
+                <h1 class="text-5xl md:text-6xl font-bold text-yellow-400 mb-6 fade-in">
+                    ⭐ 星象分析
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 fade-in">
+                    探索星座奥秘，洞察天体对您生活的影响
+                </p>
+            </div>
+        </section>
+
+        <!-- 星座选择区域 -->
+        <section class="py-12">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="mystical-card rounded-2xl p-8 mb-8 fade-in">
+                    <h2 class="text-3xl font-bold text-yellow-400 mb-8 text-center">选择您的星座</h2>
+                    <div class="zodiac-wheel" id="zodiacWheel">
+                        <!-- 太阳 -->
+                        <div class="planet sun"></div>
+                        <!-- 月亮 -->
+                        <div class="planet moon"></div>
+                        <!-- 星座将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <!-- 生日输入 -->
+                    <div class="mt-8 text-center">
+                        <div class="max-w-md mx-auto">
+                            <label class="block text-yellow-400 font-bold mb-2">或者输入您的生日</label>
+                            <input type="date" id="birthDateInput" class="w-full px-4 py-3 rounded-lg input-field mb-4">
+                            <button onclick="calculateZodiacSign()" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                                🎯 确定星座
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 星座信息展示区域 -->
+        <section id="zodiacInfoSection" class="py-12 hidden">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="constellation-info rounded-2xl p-8 mb-8">
+                    <div class="text-center mb-8">
+                        <div class="text-8xl mb-4" id="zodiacSymbol">♈</div>
+                        <h2 class="text-4xl font-bold text-yellow-400 mb-2" id="zodiacName">白羊座</h2>
+                        <p class="text-xl text-gray-300" id="zodiacDates">3月21日 - 4月19日</p>
+                        <div class="flex justify-center items-center space-x-6 mt-4">
+                            <div class="text-center">
+                                <div class="text-yellow-400 font-bold">元素</div>
+                                <div id="zodiacElement" class="text-white">火</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-yellow-400 font-bold">守护星</div>
+                                <div id="zodiacPlanet" class="text-white">火星</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-2xl font-bold text-yellow-400 mb-4">🌟 星座特征</h3>
+                            <div id="zodiacCharacteristics" class="space-y-3 text-gray-300">
+                                <!-- 特征将通过JavaScript生成 -->
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-yellow-400 mb-4">💫 今日运势</h3>
+                            <div id="zodiacFortune" class="space-y-3 text-gray-300">
+                                <!-- 运势将通过JavaScript生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 详细运势分析 -->
+        <section id="detailedFortuneSection" class="py-12 hidden">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-yellow-400 mb-4">📊 详细运势分析</h2>
+                    <p class="text-xl text-gray-300">基于当前星象的深度分析</p>
+                </div>
+                
+                <div class="fortune-grid mb-12">
+                    <div class="fortune-card">
+                        <div class="progress-circle" style="--percentage: 0deg;" id="loveCircle">
+                            <div class="progress-text" id="loveScore">0%</div>
+                        </div>
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">💕 爱情运势</h4>
+                        <p class="text-gray-300 text-sm" id="loveDescription">-</p>
+                    </div>
+                    
+                    <div class="fortune-card">
+                        <div class="progress-circle" style="--percentage: 0deg;" id="careerCircle">
+                            <div class="progress-text" id="careerScore">0%</div>
+                        </div>
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">💼 事业运势</h4>
+                        <p class="text-gray-300 text-sm" id="careerDescription">-</p>
+                    </div>
+                    
+                    <div class="fortune-card">
+                        <div class="progress-circle" style="--percentage: 0deg;" id="wealthCircle">
+                            <div class="progress-text" id="wealthScore">0%</div>
+                        </div>
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">💰 财运</h4>
+                        <p class="text-gray-300 text-sm" id="wealthDescription">-</p>
+                    </div>
+                    
+                    <div class="fortune-card">
+                        <div class="progress-circle" style="--percentage: 0deg;" id="healthCircle">
+                            <div class="progress-text" id="healthScore">0%</div>
+                        </div>
+                        <h4 class="text-xl font-bold text-yellow-400 mb-2">🏥 健康运势</h4>
+                        <p class="text-gray-300 text-sm" id="healthDescription">-</p>
+                    </div>
+                </div>
+                
+                <!-- 天体位置图 -->
+                <div class="mystical-card rounded-2xl p-8 mb-8">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">🌌 当前天体位置</h3>
+                    <div class="celestial-chart" id="celestialChart"></div>
+                    <div class="mt-4 text-center">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div class="text-center">
+                                <div class="w-4 h-4 rounded-full bg-yellow-400 mx-auto mb-1"></div>
+                                <div class="text-yellow-400">太阳</div>
+                                <div class="text-gray-400">生命力</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-4 h-4 rounded-full bg-gray-300 mx-auto mb-1"></div>
+                                <div class="text-yellow-400">月亮</div>
+                                <div class="text-gray-400">情感</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-4 h-4 rounded-full bg-orange-400 mx-auto mb-1"></div>
+                                <div class="text-yellow-400">水星</div>
+                                <div class="text-gray-400">沟通</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-4 h-4 rounded-full bg-pink-400 mx-auto mb-1"></div>
+                                <div class="text-yellow-400">金星</div>
+                                <div class="text-gray-400">爱情</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 星象解读 -->
+                <div class="mystical-card rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">🔭 星象解读</h3>
+                    <div id="celestialInterpretation" class="space-y-4 text-gray-300 leading-relaxed">
+                        <!-- 解读内容将通过JavaScript生成 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 操作按钮 -->
+        <section id="actionSection" class="py-12 hidden">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <div class="space-x-4">
+                    <button onclick="shareAstrology()" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                        📤 分享星象分析
+                    </button>
+                    <button onclick="resetAstrology()" class="border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-6 py-3 rounded-full font-bold transition-all duration-300">
+                        🔄 重新分析
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部导航 -->
+    <footer class="bg-black bg-opacity-50 py-12 border-t border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="text-2xl font-bold text-yellow-400 mb-4">🔮 神秘AI</div>
+            <p class="text-gray-400 mb-8">探索未知，洞察未来，体验神秘的占卜之旅</p>
+            <div class="flex justify-center space-x-8 mb-8">
+                <a href="index.html" class="text-gray-400 hover:text-yellow-400 transition-colors">首页</a>
+                <a href="fortune.html" class="text-gray-400 hover:text-yellow-400 transition-colors">运势计算</a>
+                <a href="tarot.html" class="text-gray-400 hover:text-yellow-400 transition-colors">塔罗占卜</a>
+                <a href="astrology.html" class="text-yellow-400 hover:text-white transition-colors">星象分析</a>
+            </div>
+            <p class="text-gray-500 text-sm">© 2025 神秘AI. 仅供娱乐参考，请理性对待占卜结果</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+    <script>
+        let selectedZodiac = null;
+        let celestialChart;
+        
+        // 星座数据
+        const zodiacData = {
+            '♈': { name: '白羊座', dates: '3月21日 - 4月19日', element: '火', planet: '火星', characteristics: ['充满活力', '勇敢果断', '领导力强', '冲动直接', '竞争意识强'] },
+            '♉': { name: '金牛座', dates: '4月20日 - 5月20日', element: '土', planet: '金星', characteristics: ['稳重可靠', '追求美感', '固执己见', '物质享受', '耐心十足'] },
+            '♊': { name: '双子座', dates: '5月21日 - 6月21日', element: '风', planet: '水星', characteristics: ['机智灵活', '好奇心强', '善于沟通', '变化多端', '多才多艺'] },
+            '♋': { name: '巨蟹座', dates: '6月22日 - 7月22日', element: '水', planet: '月亮', characteristics: ['情感丰富', '家庭观念', '直觉敏锐', '保护欲强', '记忆力好'] },
+            '♌': { name: '狮子座', dates: '7月23日 - 8月22日', element: '火', planet: '太阳', characteristics: ['自信大方', '表现欲强', '慷慨热情', '自尊心强', '领导魅力'] },
+            '♍': { name: '处女座', dates: '8月23日 - 9月22日', element: '土', planet: '水星', characteristics: ['完美主义', '分析能力强', '细心谨慎', '服务精神', '批判思维'] },
+            '♎': { name: '天秤座', dates: '9月23日 - 10月23日', element: '风', planet: '金星', characteristics: ['追求平衡', '审美能力', '社交手腕', '优柔寡断', '公正客观'] },
+            '♏': { name: '天蝎座', dates: '10月24日 - 11月22日', element: '水', planet: '冥王星', characteristics: ['洞察力强', '意志坚定', '神秘魅力', '占有欲强', '转化能力'] },
+            '♐': { name: '射手座', dates: '11月23日 - 12月21日', element: '火', planet: '木星', characteristics: ['乐观开朗', '追求自由', '探索精神', '直言不讳', '哲学思维'] },
+            '♑': { name: '摩羯座', dates: '12月22日 - 1月19日', element: '土', planet: '土星', characteristics: ['务实稳重', '目标明确', '责任感强', '保守传统', '坚韧不拔'] },
+            '♒': { name: '水瓶座', dates: '1月20日 - 2月18日', element: '风', planet: '天王星', characteristics: ['独立思考', '创新前卫', '人道主义', '叛逆不羁', '友善博爱'] },
+            '♓': { name: '双鱼座', dates: '2月19日 - 3月20日', element: '水', planet: '海王星', characteristics: ['想象力丰富', '同情心强', '直觉敏锐', '逃避现实', '艺术天赋'] }
+        };
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initStarField();
+            initScrollEffects();
+            createZodiacWheel();
+        });
+        
+        // 初始化滚动效果
+        function initScrollEffects() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+            
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => observer.observe(el));
+        }
+        
+        // 创建星座轮盘
+        function createZodiacWheel() {
+            const wheel = document.getElementById('zodiacWheel');
+            const signs = Object.keys(zodiacData);
+            const radius = 170;
+            const centerX = 200;
+            const centerY = 200;
+            
+            signs.forEach((symbol, index) => {
+                const angle = (index / signs.length) * Math.PI * 2 - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius - 30;
+                const y = centerY + Math.sin(angle) * radius - 30;
+                
+                const signElement = document.createElement('div');
+                signElement.className = 'zodiac-sign';
+                signElement.style.left = x + 'px';
+                signElement.style.top = y + 'px';
+                signElement.textContent = symbol;
+                signElement.dataset.symbol = symbol;
+                
+                signElement.addEventListener('click', () => selectZodiac(symbol, signElement));
+                
+                wheel.appendChild(signElement);
+            });
+        }
+        
+        // 选择星座
+        function selectZodiac(symbol, element) {
+            // 清除之前的选择
+            document.querySelectorAll('.zodiac-sign').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // 选中当前星座
+            element.classList.add('selected');
+            selectedZodiac = symbol;
+            
+            // 显示星座信息
+            showZodiacInfo(symbol);
+            
+            // 创建魔法效果
+            createMagicEffect(element);
+        }
+        
+        // 创建魔法效果
+        function createMagicEffect(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: fixed;
+                    left: ${centerX}px;
+                    top: ${centerY}px;
+                    width: 4px;
+                    height: 4px;
+                    background: #d4af37;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                `;
+                
+                document.body.appendChild(particle);
+                
+                const angle = (i / 12) * Math.PI * 2;
+                const distance = 80;
+                const endX = centerX + Math.cos(angle) * distance;
+                const endY = centerY + Math.sin(angle) * distance;
+                
+                anime({
+                    targets: particle,
+                    left: endX,
+                    top: endY,
+                    opacity: [1, 0],
+                    scale: [1, 0.3],
+                    duration: 1200,
+                    easing: 'easeOutExpo',
+                    complete: () => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }
+                });
+            }
+        }
+        
+        // 显示星座信息
+        async function showZodiacInfo(symbol) {
+            const data = zodiacData[symbol];
+            
+            document.getElementById('zodiacSymbol').textContent = symbol;
+            document.getElementById('zodiacName').textContent = data.name;
+            document.getElementById('zodiacDates').textContent = data.dates;
+            document.getElementById('zodiacElement').textContent = data.element;
+            document.getElementById('zodiacPlanet').textContent = data.planet;
+            
+            // 显示特征
+            const characteristicsDiv = document.getElementById('zodiacCharacteristics');
+            characteristicsDiv.innerHTML = data.characteristics.map(char => 
+                `<div class="flex items-center space-x-2">
+                    <span class="text-yellow-400">✨</span>
+                    <span>${char}</span>
+                </div>`
+            ).join('');
+            
+            // 生成运势
+            let fortune;
+            try {
+                // 使用AI增强的星象分析
+                const birthDate = document.getElementById('birthDateInput').value || '1990-06-15';
+                fortune = await window.mysticalAI.analyzeAstrologyWithAI(birthDate);
+            } catch (error) {
+                console.warn('AI星象分析失败，使用基础分析:', error);
+                fortune = window.mysticalAI.generateZodiacFortune({ name: data.name });
+                fortune.aiAnalysis = '抱歉，AI星象分析服务暂时不可用，以下是基础星象分析。请检查API配置或稍后再试。';
+            }
+            
+            const fortuneDiv = document.getElementById('zodiacFortune');
+            fortuneDiv.innerHTML = `
+                <div class="mb-3">
+                    <div class="text-yellow-400 font-bold mb-1">今日运势指数</div>
+                    <div class="text-2xl font-bold text-white">${Math.round((fortune.love + fortune.career + fortune.wealth + fortune.health) / 4)}%</div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-yellow-400 font-bold mb-1">星象解读</div>
+                    <div class="text-gray-300">${fortune.description}</div>
+                </div>
+                <div>
+                    <div class="text-yellow-400 font-bold mb-1">今日建议</div>
+                    <div class="text-gray-300">${fortune.advice}</div>
+                </div>
+                ${fortune.aiAnalysis ? `
+                <div class="mt-4 p-4 bg-purple-900 bg-opacity-30 border-l-4 border-purple-400 rounded">
+                    <div class="text-purple-300 font-bold mb-2">🤖 AI深度分析</div>
+                    <div class="text-purple-100 text-sm leading-relaxed">${fortune.aiAnalysis}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            // 显示区域
+            document.getElementById('zodiacInfoSection').classList.remove('hidden');
+            
+            // 显示详细运势
+            showDetailedFortune(fortune);
+            
+            // 创建天体图
+            createCelestialChart();
+            
+            // 生成星象解读
+            generateCelestialInterpretation(data, fortune);
+            
+            // 显示操作按钮
+            document.getElementById('actionSection').classList.remove('hidden');
+            
+            // 滚动到信息区域
+            document.getElementById('zodiacInfoSection').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+        
+        // 显示详细运势
+        function showDetailedFortune(fortune) {
+            const categories = [
+                { key: 'love', name: '爱情', score: fortune.love, desc: getFortuneDescription('love', fortune.love) },
+                { key: 'career', name: '事业', score: fortune.career, desc: getFortuneDescription('career', fortune.career) },
+                { key: 'wealth', name: '财运', score: fortune.wealth, desc: getFortuneDescription('wealth', fortune.wealth) },
+                { key: 'health', name: '健康', score: fortune.health, desc: getFortuneDescription('health', fortune.health) }
+            ];
+            
+            categories.forEach((category, index) => {
+                setTimeout(() => {
+                    updateProgressCircle(category.key, category.score);
+                    document.getElementById(category.key + 'Description').textContent = category.desc;
+                }, index * 300);
+            });
+            
+            document.getElementById('detailedFortuneSection').classList.remove('hidden');
+        }
+        
+        // 更新进度圆环
+        function updateProgressCircle(type, score) {
+            const circle = document.getElementById(type + 'Circle');
+            const text = document.getElementById(type + 'Score');
+            
+            const percentage = (score / 100) * 360;
+            
+            // 直接设置CSS变量
+            circle.style.setProperty('--percentage', percentage + 'deg');
+            
+            // 动画更新数值
+            anime({
+                targets: { value: 0 },
+                value: score,
+                duration: 1000,
+                easing: 'easeOutExpo',
+                update: function(anim) {
+                    text.textContent = Math.round(anim.animatables[0].target.value) + '%';
+                }
+            });
+        }
+        
+        // 获取运势描述
+        function getFortuneDescription(type, score) {
+            const descriptions = {
+                love: {
+                    high: '感情运势旺盛，适合表白或增进感情',
+                    medium: '感情稳定，需要更多沟通和理解',
+                    low: '感情方面需要谨慎，避免冲动决定'
+                },
+                career: {
+                    high: '事业运势极佳，机会多多，适合展现才华',
+                    medium: '工作稳定，需要持续努力和专注',
+                    low: '工作压力较大，需要调整心态和策略'
+                },
+                wealth: {
+                    high: '财运亨通，适合投资或开展新项目',
+                    medium: '财务状况稳定，需要理性消费',
+                    low: '财运不佳，需要谨慎理财，避免风险'
+                },
+                health: {
+                    high: '身体健康，精力充沛，适合运动锻炼',
+                    medium: '身体状况良好，注意劳逸结合',
+                    low: '健康需要关注，注意休息和调养'
+                }
+            };
+            
+            const level = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
+            return descriptions[type][level];
+        }
+        
+        // 创建天体图
+        function createCelestialChart() {
+            const chartDom = document.getElementById('celestialChart');
+            celestialChart = echarts.init(chartDom);
+            
+            // 模拟天体数据
+            const planets = [
+                { name: '太阳', x: 50, y: 50, size: 20, color: '#FFD700' },
+                { name: '月亮', x: 70, y: 30, size: 15, color: '#C0C0C0' },
+                { name: '水星', x: 30, y: 70, size: 10, color: '#FFA500' },
+                { name: '金星', x: 80, y: 60, size: 12, color: '#FF69B4' },
+                { name: '火星', x: 20, y: 40, size: 11, color: '#DC143C' },
+                { name: '木星', x: 60, y: 80, size: 18, color: '#4169E1' },
+                { name: '土星', x: 40, y: 20, size: 16, color: '#8B4513' }
+            ];
+            
+            // 添加连接线显示天体关系
+            const connections = [
+                [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]
+            ];
+            
+            const option = {
+                backgroundColor: 'transparent',
+                xAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 100,
+                    show: false
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 100,
+                    show: false
+                },
+                series: [
+                    // 连接线
+                    {
+                        type: 'lines',
+                        coordinateSystem: 'cartesian2d',
+                        data: connections.map(conn => ({
+                            coords: [
+                                [planets[conn[0]].x, planets[conn[0]].y],
+                                [planets[conn[1]].x, planets[conn[1]].y]
+                            ]
+                        })),
+                        lineStyle: {
+                            color: 'rgba(212, 175, 55, 0.3)',
+                            width: 1,
+                            type: 'dashed'
+                        },
+                        silent: true
+                    },
+                    // 天体
+                    {
+                        type: 'scatter',
+                        data: planets.map(p => [p.x, p.y, p.size]),
+                        symbolSize: function(data) {
+                            return data[2];
+                        },
+                        itemStyle: {
+                            color: function(params) {
+                                return planets[params.dataIndex].color;
+                            },
+                            shadowBlur: 20,
+                            shadowColor: 'rgba(255, 215, 0, 0.8)'
+                        },
+                        label: {
+                            show: true,
+                            position: 'bottom',
+                            formatter: function(params) {
+                                return planets[params.dataIndex].name;
+                            },
+                            color: '#d4af37',
+                            fontSize: 12
+                        }
+                    }
+                ]
+            };
+            
+            celestialChart.setOption(option);
+        }
+        
+        // 生成星象解读
+        function generateCelestialInterpretation(zodiacData, fortune) {
+            const interpretationDiv = document.getElementById('celestialInterpretation');
+            
+            const interpretations = [
+                `当前${zodiacData.name}受到${zodiacData.planet}的强烈影响，这会带来${zodiacData.element}元素的特质。`,
+                `太阳的位置显示您的核心能量集中在${fortune.career >= 80 ? '事业成功' : fortune.career >= 60 ? '稳定发展' : '需要调整'}的领域。`,
+                `月亮的运行轨迹表明您的情感状态${fortune.love >= 80 ? '非常和谐' : fortune.love >= 60 ? '相对稳定' : '需要关注'}。`,
+                `金星的影响为您的财务带来${fortune.wealth >= 80 ? '丰厚回报' : fortune.wealth >= 60 ? '平稳收入' : '谨慎理财'}的提示。`,
+                `整体星象配置建议您在${fortune.health >= 80 ? '保持健康生活方式' : fortune.health >= 60 ? '注意劳逸结合' : '重点关注身心健康'}。`
+            ];
+            
+            interpretationDiv.innerHTML = interpretations.map(text => 
+                `<div class="flex items-start space-x-2">
+                    <span class="text-yellow-400 mt-1">⭐</span>
+                    <span>${text}</span>
+                </div>`
+            ).join('');
+        }
+        
+        // 根据生日计算星座
+        function calculateZodiacSign() {
+            const birthDate = document.getElementById('birthDateInput').value;
+            
+            if (!birthDate) {
+                alert('请选择您的生日日期');
+                return;
+            }
+            
+            const zodiacSign = window.mysticalAI.getZodiacSign(birthDate);
+            const symbol = zodiacSign.symbol || getSymbolByName(zodiacSign.name);
+            
+            // 触发星座选择
+            const signElement = document.querySelector(`[data-symbol="${symbol}"]`);
+            if (signElement) {
+                selectZodiac(symbol, signElement);
+            }
+        }
+        
+        // 根据星座名称获取符号
+        function getSymbolByName(name) {
+            const symbolMap = {
+                '白羊座': '♈', '金牛座': '♉', '双子座': '♊', '巨蟹座': '♋',
+                '狮子座': '♌', '处女座': '♍', '天秤座': '♎', '天蝎座': '♏',
+                '射手座': '♐', '摩羯座': '♑', '水瓶座': '♒', '双鱼座': '♓'
+            };
+            return symbolMap[name] || '♈';
+        }
+        
+        // 分享星象分析
+        function shareAstrology() {
+            if (!selectedZodiac) {
+                alert('请先选择星座');
+                return;
+            }
+            
+            const data = zodiacData[selectedZodiac];
+            const fortune = window.mysticalAI.generateZodiacFortune({ name: data.name });
+            
+            const shareText = `⭐ ${data.name}星象分析\n\n📅 日期: ${data.dates}\n🌍 元素: ${data.element}\n⭐ 守护星: ${data.planet}\n\n🔮 今日运势: ${Math.round((fortune.love + fortune.career + fortune.wealth + fortune.health) / 4)}%\n💫 星象解读: ${fortune.description}\n\n来自神秘AI星象分析`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `${data.name}星象分析`,
+                    text: shareText
+                });
+            } else {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('星象分析已复制到剪贴板！');
+                });
+            }
+        }
+        
+        // 重置星象分析
+        function resetAstrology() {
+            selectedZodiac = null;
+            
+            // 清除选择
+            document.querySelectorAll('.zodiac-sign').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // 清除生日输入
+            document.getElementById('birthDateInput').value = '';
+            
+            // 隐藏所有区域
+            document.getElementById('zodiacInfoSection').classList.add('hidden');
+            document.getElementById('detailedFortuneSection').classList.add('hidden');
+            document.getElementById('actionSection').classList.add('hidden');
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // 窗口大小改变时重新调整图表
+        window.addEventListener('resize', function() {
+            if (celestialChart) {
+                celestialChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>

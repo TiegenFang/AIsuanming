@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运势计算 - 神秘AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0a0e27;
+            --primary-black: #000000;
+            --accent-gold: #d4af37;
+            --accent-silver: #c0c0c0;
+            --secondary-purple: #2d1b69;
+            --secondary-red: #8b0000;
+            --text-white: #ffffff;
+            --text-light: #e0e0e0;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-purple) 100%);
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+        
+        .mystical-card {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid var(--accent-gold);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .mystical-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        .glow-button {
+            background: linear-gradient(45deg, var(--accent-gold), var(--accent-silver));
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gold);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .fortune-wheel {
+            width: 300px;
+            height: 300px;
+            border: 4px solid var(--accent-gold);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+        
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+        }
+        
+        .fortune-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid var(--accent-gold);
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.8));
+        }
+        
+        .fortune-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .crystal-ball {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(147, 112, 219, 0.6), rgba(25, 25, 112, 0.8));
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(147, 112, 219, 0.5);
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .crystal-ball::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 30%;
+            height: 30%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
+            border-radius: 50%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .input-field {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid var(--accent-gold);
+            color: var(--text-white);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-silver);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(10, 14, 39, 0.9) 100%);
+            border: 2px solid var(--accent-gold);
+            backdrop-filter: blur(15px);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div id="star-field" class="star-field"></div>
+    
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 bg-black bg-opacity-50 backdrop-blur-md border-b border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-yellow-400">🔮 神秘AI</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="index.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">首页</a>
+                        <a href="fortune.html" class="nav-link text-yellow-400 hover:text-white px-3 py-2 text-sm font-medium">运势计算</a>
+                        <a href="tarot.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">塔罗占卜</a>
+                        <a href="astrology.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">星象分析</a>
+                        <a href="settings.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🔑 设置</a>
+                        <a href="test-api.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🧪 测试</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="pt-20 min-h-screen">
+        <!-- 标题区域 -->
+        <section class="text-center py-12">
+            <div class="max-w-4xl mx-auto px-4">
+                <h1 class="text-5xl md:text-6xl font-bold text-yellow-400 mb-6 fade-in">
+                    🎯 AI运势计算
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 fade-in">
+                    输入您的生日，AI将为您分析今日的运势走向
+                </p>
+            </div>
+        </section>
+
+        <!-- 输入区域 -->
+        <section class="py-12">
+            <div class="max-w-4xl mx-auto px-4">
+                <!-- 第一步：基础信息输入 -->
+                <div id="step1" class="mystical-card rounded-2xl p-8 fade-in">
+                    <div class="text-center mb-8">
+                        <div class="crystal-ball mb-6"></div>
+                        <h2 class="text-2xl font-bold text-yellow-400 mb-4">🔮 AI深度运势分析</h2>
+                        <p class="text-gray-400">让AI为您提供个性化的深度运势解读</p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-yellow-400 font-bold mb-2">出生日期</label>
+                                <div class="relative">
+                                    <input type="date" id="birthDate" class="w-full px-4 py-3 rounded-lg input-field opacity-0 absolute inset-0 cursor-pointer">
+                                    <div class="w-full px-4 py-3 rounded-lg input-field flex items-center justify-between">
+                                        <span id="birthDateDisplay" class="text-gray-400">请选择您的生日</span>
+                                        <span class="text-yellow-400">📅</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-yellow-400 font-bold mb-2">出生时间（可选）</label>
+                                <input type="time" id="birthTime" class="w-full px-4 py-3 rounded-lg input-field">
+                                <p class="text-xs text-gray-500 mt-1">更精确的时间可提供更准确的分析</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-yellow-400 font-bold mb-2">您最关心的问题</label>
+                            <textarea id="mainQuestion" class="w-full px-4 py-3 rounded-lg input-field h-24 resize-none" 
+                                placeholder="请描述您最近关心的问题或想要了解的方面..."></textarea>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button onclick="startAIAnalysis()" class="glow-button px-8 py-4 rounded-full text-black font-bold text-lg">
+                                🚀 开始AI分析
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第二步：AI对话式分析 -->
+                <div id="step2" class="mystical-card rounded-2xl p-8 mt-8 hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-yellow-400 mb-4">🤖 AI正在为您分析...</h2>
+                        <div id="zodiacInfo" class="mb-4"></div>
+                    </div>
+                    
+                    <!-- AI对话区域 -->
+                    <div id="aiChat" class="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                        <!-- AI对话内容将在这里显示 -->
+                    </div>
+                    
+                    <!-- 用户回答区域 -->
+                    <div id="userResponse" class="hidden">
+                        <div class="border-t border-yellow-600 pt-6">
+                            <label class="block text-yellow-400 font-bold mb-2" id="questionLabel">请回答AI的问题：</label>
+                            <textarea id="userAnswer" class="w-full px-4 py-3 rounded-lg input-field h-20 resize-none" 
+                                placeholder="请详细描述您的情况..."></textarea>
+                            <div class="text-center mt-4">
+                                <button onclick="submitAnswer()" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                                    📤 提交回答
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果展示区域 -->
+        <section id="resultSection" class="py-12 hidden">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-yellow-400 mb-4">🔮 您的今日运势</h2>
+                    <p class="text-xl text-gray-300">AI为您精心分析的结果</p>
+                </div>
+                
+                <!-- AI运势计算结果独立显示区域 -->
+                <div id="fortuneResultDisplay" class="mystical-card rounded-2xl p-8 mb-8 hidden">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">📊 AI运势分析报告</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-xl font-bold text-yellow-400 mb-4">🎯 总体运势</h4>
+                            <div class="bg-gray-800 rounded-lg p-4 mb-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-300">运势指数</span>
+                                    <span id="overallScoreDisplay" class="text-yellow-400 font-bold text-2xl">-</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-3">
+                                    <div id="overallProgressBar" class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <p id="overallDescriptionDisplay" class="text-gray-300 leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-yellow-400 mb-4">🍀 幸运元素</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-300">幸运数字</span>
+                                    <span id="luckyNumberDisplay" class="text-yellow-400 font-bold text-xl">-</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-300">幸运颜色</span>
+                                    <span id="luckyColorDisplay" class="font-bold text-xl">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="text-xl font-bold text-yellow-400 mb-3">💡 AI建议</h4>
+                        <div class="bg-blue-900 bg-opacity-30 border-l-4 border-blue-400 p-4 rounded">
+                            <p id="adviceDisplay" class="text-blue-100 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- 运势雷达图 -->
+                    <div class="result-card rounded-2xl p-8">
+                        <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">运势雷达图</h3>
+                        <div id="radarChart" style="width: 100%; height: 400px;"></div>
+                    </div>
+                    
+                    <!-- 详细分析 -->
+                    <div class="space-y-6">
+                        <!-- 总体运势 -->
+                        <div class="result-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-yellow-400 mb-4">📊 总体运势</h3>
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="relative w-32 h-32">
+                                    <svg class="progress-ring w-32 h-32">
+                                        <circle cx="64" cy="64" r="56" stroke="rgba(212, 175, 55, 0.2)" stroke-width="8" fill="transparent"/>
+                                        <circle id="overallProgress" cx="64" cy="64" r="56" stroke="#d4af37" stroke-width="8" fill="transparent" 
+                                                stroke-dasharray="351.86" stroke-dashoffset="351.86" class="progress-ring-circle"/>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <span id="overallScore" class="text-3xl font-bold text-yellow-400">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p id="overallDescription" class="text-gray-300 text-center"></p>
+                        </div>
+                        
+                        <!-- 幸运元素 -->
+                        <div class="result-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-yellow-400 mb-4">🍀 幸运元素</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center">
+                                    <div class="text-2xl mb-2">🔢</div>
+                                    <div class="text-yellow-400 font-bold">幸运数字</div>
+                                    <div id="luckyNumber" class="text-2xl text-white font-bold">-</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl mb-2">🎨</div>
+                                    <div class="text-yellow-400 font-bold">幸运颜色</div>
+                                    <div id="luckyColor" class="text-lg text-white font-bold">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 今日建议 -->
+                        <div class="result-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-yellow-400 mb-4">💡 今日建议</h3>
+                            <p id="advice" class="text-gray-300 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 详细运势分析 -->
+                <div class="mt-12">
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="result-card rounded-2xl p-6 text-center">
+                            <div class="text-4xl mb-4">💕</div>
+                            <h4 class="text-lg font-bold text-yellow-400 mb-2">爱情运势</h4>
+                            <div class="text-3xl font-bold text-white mb-2" id="loveScore">-</div>
+                            <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
+                                <div id="loveBar" class="bg-gradient-to-r from-pink-400 to-pink-600 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-400" id="loveDesc">-</p>
+                        </div>
+                        
+                        <div class="result-card rounded-2xl p-6 text-center">
+                            <div class="text-4xl mb-4">💼</div>
+                            <h4 class="text-lg font-bold text-yellow-400 mb-2">事业运势</h4>
+                            <div class="text-3xl font-bold text-white mb-2" id="careerScore">-</div>
+                            <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
+                                <div id="careerBar" class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-400" id="careerDesc">-</p>
+                        </div>
+                        
+                        <div class="result-card rounded-2xl p-6 text-center">
+                            <div class="text-4xl mb-4">💰</div>
+                            <h4 class="text-lg font-bold text-yellow-400 mb-2">财运</h4>
+                            <div class="text-3xl font-bold text-white mb-2" id="wealthScore">-</div>
+                            <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
+                                <div id="wealthBar" class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-400" id="wealthDesc">-</p>
+                        </div>
+                        
+                        <div class="result-card rounded-2xl p-6 text-center">
+                            <div class="text-4xl mb-4">🏥</div>
+                            <h4 class="text-lg font-bold text-yellow-400 mb-2">健康运势</h4>
+                            <div class="text-3xl font-bold text-white mb-2" id="healthScore">-</div>
+                            <div class="w-full bg-gray-700 rounded-full h-2 mb-2">
+                                <div id="healthBar" class="bg-gradient-to-r from-orange-400 to-orange-600 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-400" id="healthDesc">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="text-center mt-12 space-x-4">
+                    <button onclick="shareResult()" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                        📤 分享结果
+                    </button>
+                    <button onclick="resetForm()" class="border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-6 py-3 rounded-full font-bold transition-all duration-300">
+                        🔄 重新测算
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部导航 -->
+    <footer class="bg-black bg-opacity-50 py-12 border-t border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="text-2xl font-bold text-yellow-400 mb-4">🔮 神秘AI</div>
+            <p class="text-gray-400 mb-8">探索未知，洞察未来，体验神秘的占卜之旅</p>
+            <div class="flex justify-center space-x-8 mb-8">
+                <a href="index.html" class="text-gray-400 hover:text-yellow-400 transition-colors">首页</a>
+                <a href="fortune.html" class="text-yellow-400 hover:text-white transition-colors">运势计算</a>
+                <a href="tarot.html" class="text-gray-400 hover:text-yellow-400 transition-colors">塔罗占卜</a>
+                <a href="astrology.html" class="text-gray-400 hover:text-yellow-400 transition-colors">星象分析</a>
+            </div>
+            <p class="text-gray-500 text-sm">© 2025 神秘AI. 仅供娱乐参考，请理性对待占卜结果</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+    <script>
+        let radarChart;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initStarField();
+            initScrollEffects();
+            setTodayDate();
+        });
+        
+        // 设置今天的日期为默认值
+        function setTodayDate() {
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0];
+            const birthDateInput = document.getElementById('birthDate');
+            const birthDateDisplay = document.getElementById('birthDateDisplay');
+            
+            birthDateInput.value = dateString;
+            birthDateDisplay.textContent = formatDateForDisplay(today);
+            birthDateDisplay.classList.remove('text-gray-400');
+            birthDateDisplay.classList.add('text-white');
+        }
+        
+        // 格式化日期显示
+        function formatDateForDisplay(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}年${month}月${day}日`;
+        }
+        
+        // 初始化滚动效果
+        function initScrollEffects() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+            
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => observer.observe(el));
+        }
+        
+        // AI对话状态管理
+        let currentStep = 0;
+        let conversationHistory = [];
+        let userProfile = {};
+        let finalAnalysis = {};
+
+        // 开始AI分析
+        async function startAIAnalysis() {
+            const birthDate = document.getElementById('birthDate').value;
+            const birthTime = document.getElementById('birthTime').value;
+            const mainQuestion = document.getElementById('mainQuestion').value.trim();
+            
+            if (!birthDate) {
+                alert('请选择您的生日日期');
+                return;
+            }
+            
+            // 保存用户基础信息
+            userProfile = {
+                birthDate,
+                birthTime,
+                mainQuestion,
+                zodiacSign: window.mysticalAI.getZodiacSign(birthDate)
+            };
+            
+            // 显示第二步
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').classList.remove('hidden');
+            
+            // 显示星座信息
+            displayZodiacInfo();
+            
+            // 开始AI对话
+            await startAIConversation();
+        }
+
+        // 显示星座信息
+        function displayZodiacInfo() {
+            const zodiacInfo = document.getElementById('zodiacInfo');
+            const sign = userProfile.zodiacSign;
+            
+            zodiacInfo.innerHTML = `
+                <div class="bg-gradient-to-r from-purple-900 to-blue-900 bg-opacity-30 rounded-lg p-4">
+                    <div class="flex items-center justify-center space-x-4">
+                        <div class="text-4xl">${sign.symbol}</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-yellow-400">${sign.name}</h3>
+                            <p class="text-gray-300 text-sm">${sign.dates} | 元素: ${sign.element} | 守护星: ${sign.planet}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 开始AI对话
+        async function startAIConversation() {
+            try {
+                // 第一步：初步分析
+                await addAIMessage('正在分析您的基础运势信息...', true);
+                
+                const initialPrompt = `
+                请作为一位专业的占星师和运势分析师，为用户进行深度运势分析。
+
+                用户信息：
+                - 生日：${userProfile.birthDate}
+                - 星座：${userProfile.zodiacSign.name} (${userProfile.zodiacSign.symbol})
+                - 出生时间：${userProfile.birthTime || '未提供'}
+                - 关心的问题：${userProfile.mainQuestion || '整体运势'}
+
+                请按以下步骤进行：
+                1. 首先给出基于星座和当前时间的初步运势分析（包含爱情、事业、财运、健康）
+                2. 然后提出1-2个具体问题，了解用户最近的状态和遇到的具体情况
+                3. 语言要专业而神秘，像真正的占星师一样
+
+                请现在开始第一步分析。
+                `;
+                
+                const response = await window.mysticalAI.callDeepSeekAPI(initialPrompt, 'fortune');
+                await addAIMessage(response);
+                
+                // 显示用户回答区域
+                showUserResponse('请分享您最近的心情状态和遇到的具体情况，以便我为您提供更精准的分析：');
+                
+            } catch (error) {
+                console.error('AI对话启动失败:', error);
+                await addAIMessage('抱歉，AI分析服务暂时不可用。正在为您生成基础分析...', false);
+                // 降级到基础功能
+                generateBasicFortune();
+            }
+        }
+
+        // 添加AI消息
+        async function addAIMessage(message, isLoading = false) {
+            const aiChat = document.getElementById('aiChat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-3';
+            
+            if (isLoading) {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">AI</div>
+                    <div class="flex-1 bg-purple-900 bg-opacity-30 rounded-lg p-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400"></div>
+                            <span class="text-purple-100">${message}</span>
+                        </div>
+                    </div>
+                `;
+                
+                aiChat.appendChild(messageDiv);
+                aiChat.scrollTop = aiChat.scrollHeight;
+                
+                // 模拟加载延迟
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                messageDiv.remove();
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">AI</div>
+                    <div class="flex-1 bg-purple-900 bg-opacity-30 rounded-lg p-4">
+                        <div class="text-purple-100 leading-relaxed whitespace-pre-line">${message}</div>
+                    </div>
+                `;
+                
+                aiChat.appendChild(messageDiv);
+                aiChat.scrollTop = aiChat.scrollHeight;
+                
+                // 保存到对话历史
+                conversationHistory.push({ role: 'assistant', content: message });
+            }
+        }
+
+        // 添加用户消息
+        function addUserMessage(message) {
+            const aiChat = document.getElementById('aiChat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-3 justify-end';
+            
+            messageDiv.innerHTML = `
+                <div class="flex-1 bg-yellow-900 bg-opacity-30 rounded-lg p-4 max-w-md">
+                    <div class="text-yellow-100 leading-relaxed">${message}</div>
+                </div>
+                <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center text-white font-bold">您</div>
+            `;
+            
+            aiChat.appendChild(messageDiv);
+            aiChat.scrollTop = aiChat.scrollHeight;
+            
+            // 保存到对话历史
+            conversationHistory.push({ role: 'user', content: message });
+        }
+
+        // 显示用户回答区域
+        function showUserResponse(question) {
+            document.getElementById('questionLabel').textContent = question;
+            document.getElementById('userResponse').classList.remove('hidden');
+            document.getElementById('userAnswer').focus();
+        }
+
+        // 隐藏用户回答区域
+        function hideUserResponse() {
+            document.getElementById('userResponse').classList.add('hidden');
+            document.getElementById('userAnswer').value = '';
+        }
+
+        // 提交用户答案
+        async function submitAnswer() {
+            const answer = document.getElementById('userAnswer').value.trim();
+            
+            if (!answer) {
+                alert('请输入您的回答');
+                return;
+            }
+            
+            // 添加用户消息
+            addUserMessage(answer);
+            hideUserResponse();
+            
+            // 继续AI分析
+            await continueAIAnalysis(answer);
+        }
+
+        // 继续AI分析
+        async function continueAIAnalysis(userAnswer) {
+            try {
+                await addAIMessage('正在深入分析您的情况...', true);
+                
+                // 构建完整的对话上下文
+                const contextPrompt = `
+                基于之前的分析和用户的回答，请继续深入分析：
+
+                用户回答：${userAnswer}
+
+                请结合用户的具体情况：
+                1. 分析当前星象对用户的具体影响
+                2. 针对用户的问题提供具体的运势走向预测
+                3. 给出实用的建议和行动指南
+                4. 如果需要更多信息，可以再问1个关键问题
+
+                保持专业占星师的语调。
+                `;
+                
+                const response = await window.mysticalAI.callDeepSeekAPI(contextPrompt, 'fortune');
+                await addAIMessage(response);
+                
+                currentStep++;
+                
+                // 根据步骤决定是否继续提问或生成最终分析
+                if (currentStep < 2) {
+                    showUserResponse('还有什么想要补充的情况吗？或者您对哪个方面特别关心？');
+                } else {
+                    // 生成最终分析
+                    await generateFinalAnalysis();
+                }
+                
+            } catch (error) {
+                console.error('AI分析失败:', error);
+                await addAIMessage('分析过程中出现问题，正在为您生成综合分析...', false);
+                await generateFinalAnalysis();
+            }
+        }
+
+        // 生成最终分析
+        async function generateFinalAnalysis() {
+            try {
+                await addAIMessage('正在生成您的完整运势报告...', true);
+                
+                // 生成基础运势数据
+                const basicFortune = window.mysticalAI.calculateFortune(userProfile.birthDate);
+                
+                // 生成最终AI分析
+                const finalPrompt = `
+                基于我们的完整对话，请生成一份综合运势分析报告：
+
+                用户基础信息：
+                - 生日：${userProfile.birthDate}
+                - 星座：${userProfile.zodiacSign.name}
+                - 关心问题：${userProfile.mainQuestion}
+
+                对话历史：
+                ${conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+
+                请生成包含以下内容的完整报告：
+                1. 综合运势评估（爱情、事业、财运、健康）
+                2. 当前星象影响分析
+                3. 近期运势变化趋势
+                4. 具体行动建议
+                5. 需要注意的事项
+
+                格式要清晰，分段明确。
+                `;
+                
+                const finalReport = await window.mysticalAI.callDeepSeekAPI(finalPrompt, 'fortune');
+                
+                // 显示最终分析
+                finalAnalysis = {
+                    ...basicFortune,
+                    aiAnalysis: finalReport,
+                    zodiacSign: userProfile.zodiacSign,
+                    conversationSummary: conversationHistory
+                };
+                
+                // 显示结果区域
+                displayFinalResult();
+                
+            } catch (error) {
+                console.error('最终分析生成失败:', error);
+                generateBasicFortune();
+            }
+        }
+
+        // 显示最终结果
+        function displayFinalResult() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('resultSection').classList.remove('hidden');
+            
+            // 显示详细分析结果
+            displayResult(finalAnalysis);
+            
+            // 滚动到结果区域
+            setTimeout(() => {
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        }
+
+        // 生成基础运势（降级方案）
+        function generateBasicFortune() {
+            const basicFortune = window.mysticalAI.calculateFortune(userProfile.birthDate);
+            basicFortune.aiAnalysis = '基于您的星座和生日信息的基础分析。AI深度分析服务暂时不可用。';
+            basicFortune.zodiacSign = userProfile.zodiacSign;
+            
+            finalAnalysis = basicFortune;
+            displayFinalResult();
+        }
+        
+        // 初始化日期输入事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const birthDateInput = document.getElementById('birthDate');
+            const birthDateDisplay = document.getElementById('birthDateDisplay');
+            
+            birthDateInput.addEventListener('change', function() {
+                if (this.value) {
+                    const date = new Date(this.value);
+                    birthDateDisplay.textContent = formatDateForDisplay(date);
+                    birthDateDisplay.classList.remove('text-gray-400');
+                    birthDateDisplay.classList.add('text-white');
+                } else {
+                    birthDateDisplay.textContent = '请选择您的生日';
+                    birthDateDisplay.classList.add('text-gray-400');
+                    birthDateDisplay.classList.remove('text-white');
+                }
+            });
+        });
+        
+        // 显示加载动画
+        function showLoading() {
+            const button = document.querySelector('button[onclick="calculateFortune()"]');
+            if (button) {
+                button.innerHTML = '⏳ AI分析中...';
+                button.disabled = true;
+            }
+        }
+        
+        // 隐藏加载动画
+        function hideLoading() {
+            const button = document.querySelector('button[onclick="calculateFortune()"]');
+            if (button) {
+                button.innerHTML = '✨ 开始测算';
+                button.disabled = false;
+            }
+        }
+        
+        // 显示结果
+        function displayResult(fortune) {
+            console.log('显示运势结果:', fortune);
+            
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.remove('hidden');
+            
+            // 显示AI运势计算结果
+            displayFortuneResult(fortune);
+            
+            // 滚动到结果区域
+            setTimeout(() => {
+                resultSection.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+            
+            // 更新总体运势
+            const overallScore = Math.round((fortune.love + fortune.career + fortune.wealth + fortune.health) / 4);
+            updateOverallProgress(overallScore);
+            
+            // 更新幸运元素
+            document.getElementById('luckyNumber').textContent = fortune.luckyNumber;
+            document.getElementById('luckyColor').textContent = fortune.luckyColor.name;
+            document.getElementById('luckyColor').style.color = fortune.luckyColor.color;
+            
+            // 更新建议
+            document.getElementById('advice').textContent = fortune.advice;
+            
+            // 更新详细运势
+            updateDetailedFortune(fortune);
+            
+            // 创建雷达图
+            createRadarChart(fortune);
+        }
+        
+        // 显示AI运势计算结果
+        function displayFortuneResult(fortune) {
+            const resultDisplay = document.getElementById('fortuneResultDisplay');
+            const overallScore = Math.round((fortune.love + fortune.career + fortune.wealth + fortune.health) / 4);
+            
+            // 清除之前的AI分析内容
+            const existingAI = resultDisplay.querySelector('.ai-analysis-section');
+            if (existingAI) {
+                existingAI.remove();
+            }
+            
+            // 更新显示内容
+            document.getElementById('overallScoreDisplay').textContent = overallScore + '%';
+            document.getElementById('overallDescriptionDisplay').textContent = getOverallDescription(overallScore);
+            document.getElementById('luckyNumberDisplay').textContent = fortune.luckyNumber;
+            document.getElementById('luckyColorDisplay').textContent = fortune.luckyColor.name;
+            document.getElementById('luckyColorDisplay').style.color = fortune.luckyColor.color;
+            document.getElementById('adviceDisplay').textContent = fortune.advice;
+            
+            // 如果有AI分析，显示AI分析
+            if (fortune.aiAnalysis) {
+                const aiAnalysisDiv = document.createElement('div');
+                aiAnalysisDiv.className = 'ai-analysis-section mt-6 p-4 bg-purple-900 bg-opacity-30 border-l-4 border-purple-400 rounded';
+                aiAnalysisDiv.innerHTML = `
+                    <h5 class="text-purple-300 font-bold mb-2">🤖 AI深度分析</h5>
+                    <p class="text-purple-100 text-sm leading-relaxed">${fortune.aiAnalysis}</p>
+                `;
+                
+                // 添加到建议区域之后
+                const adviceSection = resultDisplay.querySelector('.mt-6');
+                if (adviceSection) {
+                    adviceSection.parentNode.insertBefore(aiAnalysisDiv, adviceSection.nextSibling);
+                } else {
+                    resultDisplay.appendChild(aiAnalysisDiv);
+                }
+            }
+            
+            // 更新进度条
+            const progressBar = document.getElementById('overallProgressBar');
+            setTimeout(() => {
+                progressBar.style.width = overallScore + '%';
+            }, 500);
+            
+            // 显示结果区域
+            resultDisplay.classList.remove('hidden');
+            
+            // 添加动画效果
+            anime({
+                targets: resultDisplay,
+                opacity: [0, 1],
+                translateY: [30, 0],
+                duration: 800,
+                easing: 'easeOutExpo'
+            });
+        }
+        
+        // 更新总体运势进度条
+        function updateOverallProgress(score) {
+            document.getElementById('overallScore').textContent = score + '%';
+            document.getElementById('overallDescription').textContent = getOverallDescription(score);
+            
+            const circle = document.getElementById('overallProgress');
+            const circumference = 2 * Math.PI * 56;
+            const offset = circumference - (score / 100) * circumference;
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 500);
+        }
+        
+        // 获取总体运势描述
+        function getOverallDescription(score) {
+            if (score >= 90) return '今日运势极佳，万事如意！';
+            if (score >= 80) return '今日运势很好，把握机会！';
+            if (score >= 70) return '今日运势不错，保持积极！';
+            if (score >= 60) return '今日运势一般，谨慎行事！';
+            return '今日运势较低，多加注意！';
+        }
+        
+        // 更新详细运势
+        function updateDetailedFortune(fortune) {
+            const categories = [
+                { key: 'love', name: '爱情', score: fortune.love, desc: getFortuneDescription('love', fortune.love) },
+                { key: 'career', name: '事业', score: fortune.career, desc: getFortuneDescription('career', fortune.career) },
+                { key: 'wealth', name: '财运', score: fortune.wealth, desc: getFortuneDescription('wealth', fortune.wealth) },
+                { key: 'health', name: '健康', score: fortune.health, desc: getFortuneDescription('health', fortune.health) }
+            ];
+            
+            categories.forEach((category, index) => {
+                setTimeout(() => {
+                    document.getElementById(category.key + 'Score').textContent = category.score + '%';
+                    document.getElementById(category.key + 'Desc').textContent = category.desc;
+                    document.getElementById(category.key + 'Bar').style.width = category.score + '%';
+                }, index * 200);
+            });
+        }
+        
+        // 获取运势描述
+        function getFortuneDescription(type, score) {
+            const descriptions = {
+                love: {
+                    high: '感情甜蜜，适合表白',
+                    medium: '感情稳定，需要沟通',
+                    low: '感情波动，保持冷静'
+                },
+                career: {
+                    high: '事业顺利，机会多多',
+                    medium: '工作稳定，需要努力',
+                    low: '工作压力大，需要调整'
+                },
+                wealth: {
+                    high: '财运亨通，适合投资',
+                    medium: '收支平衡，理性消费',
+                    low: '财运不佳，谨慎理财'
+                },
+                health: {
+                    high: '身体健康，精力充沛',
+                    medium: '身体状况良好',
+                    low: '注意休息，保持健康'
+                }
+            };
+            
+            const level = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
+            return descriptions[type][level];
+        }
+        
+        // 创建雷达图
+        function createRadarChart(fortune) {
+            const chartDom = document.getElementById('radarChart');
+            radarChart = echarts.init(chartDom);
+            
+            const option = {
+                backgroundColor: 'transparent',
+                radar: {
+                    indicator: [
+                        { name: '爱情', max: 100 },
+                        { name: '事业', max: 100 },
+                        { name: '财运', max: 100 },
+                        { name: '健康', max: 100 }
+                    ],
+                    axisName: {
+                        color: '#d4af37',
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(212, 175, 55, 0.3)'
+                        }
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(212, 175, 55, 0.5)'
+                        }
+                    },
+                    splitArea: {
+                        show: false
+                    }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{
+                        value: [fortune.love, fortune.career, fortune.wealth, fortune.health],
+                        name: '今日运势',
+                        areaStyle: {
+                            color: 'rgba(212, 175, 55, 0.3)'
+                        },
+                        lineStyle: {
+                            color: '#d4af37',
+                            width: 3
+                        },
+                        itemStyle: {
+                            color: '#d4af37',
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }
+                    }]
+                }]
+            };
+            
+            radarChart.setOption(option);
+        }
+        
+        // 分享结果
+        function shareResult() {
+            const overallScore = document.getElementById('overallScore').textContent;
+            const luckyNumber = document.getElementById('luckyNumber').textContent;
+            const luckyColor = document.getElementById('luckyColor').textContent;
+            
+            const shareText = `🔮 我的今日运势 ${overallScore}\n🍀 幸运数字: ${luckyNumber}\n🎨 幸运颜色: ${luckyColor}\n\n来自神秘AI运势计算`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '今日运势分享',
+                    text: shareText
+                });
+            } else {
+                // 复制到剪贴板
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('运势结果已复制到剪贴板！');
+                });
+            }
+        }
+        
+        // 重置表单
+        function resetForm() {
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('birthDate').value = '';
+            setTodayDate();
+            
+            // 重置进度条
+            const progressBars = document.querySelectorAll('[id$="Bar"]');
+            progressBars.forEach(bar => bar.style.width = '0%');
+            
+            // 重置圆形进度条
+            const circle = document.getElementById('overallProgress');
+            circle.style.strokeDashoffset = '351.86';
+        }
+        
+        // 窗口大小改变时重新调整图表
+        window.addEventListener('resize', function() {
+            if (radarChart) {
+                radarChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>

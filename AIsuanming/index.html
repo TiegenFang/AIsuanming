@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神秘AI - 智能算命占卜平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0a0e27;
+            --primary-black: #000000;
+            --accent-gold: #d4af37;
+            --accent-silver: #c0c0c0;
+            --secondary-purple: #2d1b69;
+            --secondary-red: #8b0000;
+            --text-white: #ffffff;
+            --text-light: #e0e0e0;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-purple) 100%);
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+        
+        .hero-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            background: linear-gradient(45deg, var(--accent-gold), var(--accent-silver));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+        
+        .mystical-card {
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid var(--accent-gold);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .mystical-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+            border-color: var(--accent-silver);
+        }
+        
+        .glow-button {
+            background: linear-gradient(45deg, var(--accent-gold), var(--accent-silver));
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .glow-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .glow-button:hover::before {
+            left: 100%;
+        }
+        
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gold);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--accent-gold), var(--accent-silver));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-icon:hover {
+            transform: rotate(360deg) scale(1.1);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+        }
+        
+        .particle-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            animation: particle-float 3s ease-out forwards;
+        }
+        
+        @keyframes particle-float {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div id="star-field" class="star-field"></div>
+    
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 bg-black bg-opacity-50 backdrop-blur-md border-b border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-yellow-400">🔮 神秘AI</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="index.html" class="nav-link text-yellow-400 hover:text-white px-3 py-2 text-sm font-medium">首页</a>
+                        <a href="fortune.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">运势计算</a>
+                        <a href="tarot.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">塔罗占卜</a>
+                        <a href="astrology.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">星象分析</a>
+                        <a href="settings.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🔑 设置</a>
+                        <a href="test-api.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🧪 测试</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero区域 -->
+    <section class="relative min-h-screen flex items-center justify-center pt-16">
+        <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div class="relative z-10 text-center max-w-4xl mx-auto px-4">
+            <div class="hero-title text-6xl md:text-8xl font-bold mb-6 fade-in" id="hero-title">
+                神秘AI
+            </div>
+            <div class="text-2xl md:text-3xl text-yellow-200 mb-8 fade-in" id="hero-subtitle">
+                融合古老智慧与现代科技的占卜平台
+            </div>
+            <div class="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto fade-in" id="hero-description">
+                通过AI技术深度解析塔罗牌、星座运势和神秘符号，为您提供专业而神秘的占卜体验
+            </div>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center fade-in" id="hero-buttons">
+                <button onclick="window.location.href='fortune.html'" class="glow-button px-8 py-4 rounded-full text-black font-bold text-lg">
+                    🎯 开始算命
+                </button>
+                <button onclick="scrollToFeatures()" class="border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-8 py-4 rounded-full font-bold text-lg transition-all duration-300">
+                    ✨ 了解更多
+                </button>
+            </div>
+            
+            <!-- API状态提示 -->
+            <div id="apiStatus" class="mt-8 max-w-md mx-auto hidden">
+                <div class="bg-red-900 bg-opacity-30 border border-red-400 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-red-300 font-bold text-sm">⚠️ API未配置</h4>
+                            <p class="text-red-100 text-xs mt-1">请先配置DeepSeek API以启用AI功能</p>
+                        </div>
+                        <button onclick="window.location.href='settings.html'" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold transition-colors">
+                            去设置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能特色区域 -->
+    <section id="features" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">神秘功能</h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    探索未知，洞察未来，体验前所未有的神秘占卜之旅
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 运势计算 -->
+                <div class="mystical-card rounded-2xl p-8 text-center floating" style="animation-delay: 0s;">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">AI运势计算</h3>
+                    <p class="text-gray-300 mb-6">
+                        基于您的生日和当前星象，AI智能分析您的今日运势，包括爱情、事业、财运和健康四个维度
+                    </p>
+                    <div class="bg-gray-800 rounded-lg p-4 mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-400">今日运势指数</span>
+                            <span class="text-yellow-400 font-bold">85%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <button onclick="window.location.href='fortune.html'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                        立即测算
+                    </button>
+                </div>
+
+                <!-- 塔罗占卜 -->
+                <div class="mystical-card rounded-2xl p-8 text-center floating" style="animation-delay: 1s;">
+                    <div class="feature-icon">🔮</div>
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">塔罗牌占卜</h3>
+                    <p class="text-gray-300 mb-6">
+                        78张经典塔罗牌，支持多种牌阵选择，AI为您提供专业的牌意解读和人生指引
+                    </p>
+                    <div class="grid grid-cols-3 gap-2 mb-6">
+                        <div class="bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">🃏</div>
+                            <div class="text-xs text-black font-bold">大阿卡纳</div>
+                        </div>
+                        <div class="bg-gradient-to-b from-purple-400 to-purple-600 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">⚔️</div>
+                            <div class="text-xs text-white font-bold">小阿卡纳</div>
+                        </div>
+                        <div class="bg-gradient-to-b from-blue-400 to-blue-600 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">🌟</div>
+                            <div class="text-xs text-white font-bold">特殊牌阵</div>
+                        </div>
+                    </div>
+                    <button onclick="window.location.href='tarot.html'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                        开始占卜
+                    </button>
+                </div>
+
+                <!-- 星象分析 -->
+                <div class="mystical-card rounded-2xl p-8 text-center floating" style="animation-delay: 2s;">
+                    <div class="feature-icon">⭐</div>
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">星象分析</h3>
+                    <p class="text-gray-300 mb-6">
+                        基于您的星座和当前天体位置，深度分析星象对您生活各方面的影响和指引
+                    </p>
+                    <div class="flex justify-center mb-6">
+                        <div class="w-32 h-32 relative">
+                            <img src="resources/zodiac-circle.jpg" alt="星座图" class="w-full h-full rounded-full border-2 border-yellow-400 animate-spin" style="animation-duration: 20s;">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-3xl">♈</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="window.location.href='astrology.html'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                        查看星象
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 特色介绍区域 -->
+    <section class="py-20 bg-black bg-opacity-30">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-6">
+                        AI驱动的神秘体验
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8">
+                        我们融合了千年古老的占卜智慧与现代人工智能技术，为您提供前所未有的神秘体验。
+                    </p>
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-xl">🧠</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-yellow-400 mb-2">智能分析</h3>
+                                <p class="text-gray-400">AI深度学习塔罗牌和星座知识，提供专业级解读</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-xl">🎨</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-yellow-400 mb-2">精美界面</h3>
+                                <p class="text-gray-400">神秘的视觉设计，沉浸式的占卜体验</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-xl">⚡</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-yellow-400 mb-2">即时结果</h3>
+                                <p class="text-gray-400">无需等待，立即获得专业的占卜结果</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <img src="resources/mystical-scene.jpg" alt="神秘场景" class="rounded-2xl shadow-2xl">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent rounded-2xl"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部导航 -->
+    <footer class="bg-black bg-opacity-50 py-12 border-t border-yellow-600">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="text-2xl font-bold text-yellow-400 mb-4">🔮 神秘AI</div>
+            <p class="text-gray-400 mb-8">探索未知，洞察未来，体验神秘的占卜之旅</p>
+            <div class="flex justify-center space-x-8 mb-8">
+                <a href="index.html" class="text-yellow-400 hover:text-white transition-colors">首页</a>
+                <a href="fortune.html" class="text-gray-400 hover:text-yellow-400 transition-colors">运势计算</a>
+                <a href="tarot.html" class="text-gray-400 hover:text-yellow-400 transition-colors">塔罗占卜</a>
+                <a href="astrology.html" class="text-gray-400 hover:text-yellow-400 transition-colors">星象分析</a>
+            </div>
+            <p class="text-gray-500 text-sm">© 2025 神秘AI. 仅供娱乐参考，请理性对待占卜结果</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // 页面加载完成后检查API状态
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkAPIStatus, 1000); // 延迟检查，确保其他脚本加载完成
+        });
+
+        // 检查API状态
+        function checkAPIStatus() {
+            // 检查API密钥是否配置
+            if (!DEEPSEEK_CONFIG || !DEEPSEEK_CONFIG.apiKey || DEEPSEEK_CONFIG.apiKey.trim() === '') {
+                showAPIStatusWarning();
+            } else {
+                // 可以进一步测试API连接
+                testAPIConnection();
+            }
+        }
+
+        // 显示API状态警告
+        function showAPIStatusWarning() {
+            const apiStatus = document.getElementById('apiStatus');
+            if (apiStatus) {
+                apiStatus.classList.remove('hidden');
+            }
+        }
+
+        // 测试API连接
+        async function testAPIConnection() {
+            try {
+                // 简单测试API是否可用
+                if (window.mysticalAI && window.mysticalAI.callDeepSeekAPI) {
+                    await window.mysticalAI.callDeepSeekAPI('test', 'fortune');
+                    console.log('✅ API连接正常');
+                }
+            } catch (error) {
+                console.warn('⚠️ API连接失败:', error);
+                showAPIStatusWarning();
+            }
+        }
+    </script>
+</body>
+</html>
