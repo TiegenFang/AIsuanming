@@ -180,9 +180,8 @@
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-8">
                         <a href="index.html" class="nav-link text-yellow-400 hover:text-white px-3 py-2 text-sm font-medium">首页</a>
-                        <a href="fortune.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">运势计算</a>
+                        <a href="fortune-new.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">运势计算</a>
                         <a href="tarot.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">塔罗占卜</a>
-                        <a href="astrology.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">星象分析</a>
                         <a href="settings.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🔑 设置</a>
                         <a href="test-api.html" class="nav-link text-white hover:text-yellow-400 px-3 py-2 text-sm font-medium">🧪 测试</a>
                     </div>
@@ -205,7 +204,7 @@
                 通过AI技术深度解析塔罗牌、星座运势和神秘符号，为您提供专业而神秘的占卜体验
             </div>
             <div class="flex flex-col sm:flex-row gap-6 justify-center fade-in" id="hero-buttons">
-                <button onclick="window.location.href='fortune.html'" class="glow-button px-8 py-4 rounded-full text-black font-bold text-lg">
+                <button onclick="window.location.href='fortune-new.html'" class="glow-button px-8 py-4 rounded-full text-black font-bold text-lg">
                     🎯 开始算命
                 </button>
                 <button onclick="scrollToFeatures()" class="border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-8 py-4 rounded-full font-bold text-lg transition-all duration-300">
@@ -257,7 +256,7 @@
                             <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 85%"></div>
                         </div>
                     </div>
-                    <button onclick="window.location.href='fortune.html'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                    <button onclick="window.location.href='fortune-new.html'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
                         立即测算
                     </button>
                 </div>
@@ -288,23 +287,25 @@
                     </button>
                 </div>
 
-                <!-- 星象分析 -->
+                <!-- 对话总结 -->
                 <div class="mystical-card rounded-2xl p-8 text-center floating" style="animation-delay: 2s;">
-                    <div class="feature-icon">⭐</div>
-                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">星象分析</h3>
+                    <div class="feature-icon">📝</div>
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">对话式运势总结</h3>
                     <p class="text-gray-300 mb-6">
-                        基于您的星座和当前天体位置，深度分析星象对您生活各方面的影响和指引
+                        与AI完成深度对话后，即时生成结构化总结，帮助您快速提炼要点、锁定关键行动。
                     </p>
-                    <div class="flex justify-center mb-6">
-                        <div class="w-32 h-32 relative">
-                            <img src="resources/zodiac-circle.jpg" alt="星座图" class="w-full h-full rounded-full border-2 border-yellow-400 animate-spin" style="animation-duration: 20s;">
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="text-3xl">♈</span>
-                            </div>
+                    <div class="grid grid-cols-2 gap-4 text-left mb-6">
+                        <div class="bg-black bg-opacity-50 rounded-xl p-4 border border-yellow-900">
+                            <div class="text-yellow-400 font-bold mb-2">🧭 重点回顾</div>
+                            <p class="text-gray-400 text-sm leading-relaxed">自动整理AI与您的核心对话，高亮能量趋势与情绪线索。</p>
+                        </div>
+                        <div class="bg-black bg-opacity-50 rounded-xl p-4 border border-yellow-900">
+                            <div class="text-yellow-400 font-bold mb-2">🪄 快速指引</div>
+                            <p class="text-gray-400 text-sm leading-relaxed">以简洁步骤回应最初的问题，为下一步行动提供方向。</p>
                         </div>
                     </div>
-                    <button onclick="window.location.href='astrology.html'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
-                        查看星象
+                    <button onclick="window.location.href='fortune-new.html#step3'" class="glow-button px-6 py-3 rounded-full text-black font-bold">
+                        体验AI总结
                     </button>
                 </div>
             </div>
@@ -361,9 +362,8 @@
             <p class="text-gray-400 mb-8">探索未知，洞察未来，体验神秘的占卜之旅</p>
             <div class="flex justify-center space-x-8 mb-8">
                 <a href="index.html" class="text-yellow-400 hover:text-white transition-colors">首页</a>
-                <a href="fortune.html" class="text-gray-400 hover:text-yellow-400 transition-colors">运势计算</a>
+                <a href="fortune-new.html" class="text-gray-400 hover:text-yellow-400 transition-colors">运势计算</a>
                 <a href="tarot.html" class="text-gray-400 hover:text-yellow-400 transition-colors">塔罗占卜</a>
-                <a href="astrology.html" class="text-gray-400 hover:text-yellow-400 transition-colors">星象分析</a>
             </div>
             <p class="text-gray-500 text-sm">© 2025 神秘AI. 仅供娱乐参考，请理性对待占卜结果</p>
         </div>
